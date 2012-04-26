@@ -1873,8 +1873,6 @@ error_return:
 	return error;
 }
 
-#ifdef HAVE_SET_RESTORE_SIGMASK
-
 /*
  * Implement the event wait interface for the eventpoll file. It is the kernel
  * part of the user space epoll_pwait(2).
@@ -1918,8 +1916,6 @@ SYSCALL_DEFINE6(epoll_pwait, int, epfd, struct epoll_event __user *, events,
 
 	return error;
 }
-
-#endif /* HAVE_SET_RESTORE_SIGMASK */
 
 static int __init eventpoll_init(void)
 {

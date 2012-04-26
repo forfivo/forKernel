@@ -3243,7 +3243,6 @@ SYSCALL_DEFINE0(pause)
 
 #endif
 
-#ifdef HAVE_SET_RESTORE_SIGMASK
 int sigsuspend(sigset_t *set)
 {
 	sigdelsetmask(set, sigmask(SIGKILL)|sigmask(SIGSTOP));
@@ -3256,7 +3255,6 @@ int sigsuspend(sigset_t *set)
 	set_restore_sigmask();
 	return -ERESTARTNOHAND;
 }
-#endif
 
 #ifdef __ARCH_WANT_SYS_RT_SIGSUSPEND
 /**
