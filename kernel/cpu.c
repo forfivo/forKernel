@@ -343,7 +343,9 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
 
 out_release:
 	cpu_hotplug_done();
+#ifdef TRACE_CRAP
 	trace_sched_cpu_hotplug(cpu, err, 0);
+#endif
 	if (!err)
 		cpu_notify_nofail(CPU_POST_DEAD | mod, hcpu);
 	return err;
@@ -424,7 +426,9 @@ out_notify:
 	sec_debug_task_log_msg(cpu, "cpuup-");
 out:
 	cpu_hotplug_done();
+#ifdef TRACE_CRAP
 	trace_sched_cpu_hotplug(cpu, ret, 1);
+#endif
 
 	return ret;
 }
