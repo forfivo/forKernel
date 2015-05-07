@@ -1954,10 +1954,11 @@ static int ext4_setup_super(struct super_block *sb, struct ext4_super_block *es,
 	if (!(sbi->s_mount_state & EXT4_VALID_FS))
 		ext4_msg(sb, KERN_WARNING, "warning: mounting unchecked fs, "
 			 "running e2fsck is recommended");
-	else if ((sbi->s_mount_state & EXT4_ERROR_FS))
+	else if ((sbi->s_mount_state & EXT4_ERROR_FS)){
 		ext4_msg(sb, KERN_WARNING,
 			 "warning: mounting fs with errors, "
 			 "running e2fsck is recommended");
+	}
 	else if ((__s16) le16_to_cpu(es->s_max_mnt_count) > 0 &&
 		 le16_to_cpu(es->s_mnt_count) >=
 		 (unsigned short) (__s16) le16_to_cpu(es->s_max_mnt_count))
@@ -4120,6 +4121,7 @@ no_journal:
 	ratelimit_state_init(&sbi->s_msg_ratelimit_state, 5 * HZ, 10);
 
 	kfree(orig_data);
+
 	return 0;
 
 cantfind_ext4:
