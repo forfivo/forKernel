@@ -404,6 +404,7 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 		selected_oom_score_adj[proc_type] = min_score_adj;
 
 	rcu_read_lock();
+
 #ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
 	for (tsk = pick_first_task();
 		tsk != pick_last_task();
@@ -444,11 +445,11 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 			continue;
 #endif
 		}
-	if (fatal_signal_pending(p)) {
-		lowmem_print(2, "skip slow dying process %d\n", p->pid);
-		task_unlock(p);
-		continue;
-	}
+		if (fatal_signal_pending(p)) {
+			lowmem_print(2, "skip slow dying process %d\n", p->pid);
+			task_unlock(p);
+			continue;
+		}
 		tasksize = get_mm_rss(p->mm);
 		task_unlock(p);
 		if (tasksize <= 0)
@@ -466,15 +467,15 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 		}
 #endif
 
-		if (selected) {
-			if (oom_score_adj < selected_oom_score_adj)
+		if (selected[proc_type]) {
+			if (oom_score_adj < selected_oom_score_adj[proc_type])
 #ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
 				break;
 #else
 				continue;
 #endif
-			if (oom_score_adj == selected_oom_score_adj &&
-			    tasksize <= selected_tasksize)
+			if (oom_score_adj == selected_oom_score_adj[proc_type] &&
+			    tasksize <= selected_tasksize[proc_type])
 				continue;
 		}
 		selected[proc_type] = p;

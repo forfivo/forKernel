@@ -1,4 +1,4 @@
-#ifdef CONFIG_ALIGNMENT_TRAP/*
+/*
  *  linux/arch/arm/kernel/head-nommu.S
  *
  *  Copyright (C) 1994-2002 Russell King

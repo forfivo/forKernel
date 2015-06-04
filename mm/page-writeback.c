@@ -36,7 +36,7 @@
 #include <linux/pagevec.h>
 #include <trace/events/writeback.h>
 #ifdef CONFIG_DYNAMIC_PAGE_WRITEBACK
-#include <linux/earlysuspend.h>
+#include <linux/powersuspend.h>
 #endif
 
 /*
@@ -108,10 +108,10 @@ int vm_dirty_ratio = 20;
 unsigned long vm_dirty_bytes;
 
 /*
- * The interval between `kupdate'-style writebacks
+ * The default intervals between `kupdate'-style writebacks
  */
-#define DEFAULT_DIRTY_WRITEBACK_INTERVAL	5 * 100 /* centiseconds */
-#define HIGH_DIRTY_WRITEBACK_INTERVAL	15 * 100 /* centiseconds */
+#define DEFAULT_DIRTY_WRITEBACK_INTERVAL	 5 * 100 /* centiseconds */
+#define HIGH_DIRTY_WRITEBACK_INTERVAL		15 * 100 /* centiseconds */
 
 /*
  * The interval between `kupdate'-style writebacks
@@ -1764,7 +1764,7 @@ static struct power_suspend dratio_suspend = {
 /*
  * Sets the dirty page writebacks interval for suspended system
  */
-static void dirty_writeback_early_suspend(struct early_suspend *handler)
+static void dirty_writeback_power_suspend(struct power_suspend *handler)
 {
 	if (dyn_dirty_writeback_enabled)
 		set_dirty_writeback_status(false);
@@ -1773,7 +1773,7 @@ static void dirty_writeback_early_suspend(struct early_suspend *handler)
 /*
  * Sets the dirty page writebacks interval for active system
  */
-static void dirty_writeback_late_resume(struct early_suspend *handler)
+static void dirty_writeback_power_resume(struct power_suspend *handler)
 {
 	if (dyn_dirty_writeback_enabled)
 		set_dirty_writeback_status(true);
@@ -1782,13 +1782,13 @@ static void dirty_writeback_late_resume(struct early_suspend *handler)
 /*
  * Struct for the dirty page writeback management during suspend/resume
  */
-static struct early_suspend dirty_writeback_suspend = {
-	.suspend = dirty_writeback_early_suspend,
-	.resume = dirty_writeback_late_resume,
+static struct power_suspend dirty_writeback_suspend = {
+	.suspend = dirty_writeback_power_suspend,
+	.resume = dirty_writeback_power_resume,
 };
 #endif
 
-static void dirty_early_suspend(struct early_suspend *handler)
+static void dirty_power_suspend(struct power_suspend *handler)
 {
 	if (dirty_expire_interval != resume_dirty_expire_interval)
 		resume_dirty_expire_interval = dirty_expire_interval;
@@ -1796,7 +1796,7 @@ static void dirty_early_suspend(struct early_suspend *handler)
 	dirty_expire_interval = suspend_dirty_expire_interval;
 }
 
-static void dirty_late_resume(struct early_suspend *handler)
+static void dirty_power_resume(struct power_suspend *handler)
 {
 	if (dirty_expire_interval != suspend_dirty_expire_interval)
 		suspend_dirty_expire_interval = dirty_expire_interval;
@@ -1804,9 +1804,9 @@ static void dirty_late_resume(struct early_suspend *handler)
 	dirty_expire_interval = resume_dirty_expire_interval;
 }
 
-static struct early_suspend dirty_suspend = {
-	.suspend = dirty_early_suspend,
-	.resume = dirty_late_resume,
+static struct power_suspend dirty_suspend = {
+	.suspend = dirty_power_suspend,
+	.resume = dirty_power_resume,
 };
 
 /*
@@ -1854,11 +1854,11 @@ void __init page_writeback_init(void)
 	sleep_dirty_expire_interval = suspend_dirty_expire_interval =
 		DEFAULT_SUSPEND_DIRTY_EXPIRE_INTERVAL;
 
-	register_early_suspend(&dirty_suspend);
+	register_power_suspend(&dirty_suspend);
 
 #ifdef CONFIG_DYNAMIC_PAGE_WRITEBACK
 	/* Register the dirty page writeback management during suspend/resume */
-	register_early_suspend(&dirty_writeback_suspend);
+	register_power_suspend(&dirty_writeback_suspend);
 #endif
 
 	writeback_set_ratelimit();
