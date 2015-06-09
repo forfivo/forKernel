@@ -988,9 +988,6 @@ retry:
 	if (have_bytes < min + reserved) {
 		ibytes = 0;
 	} else {
-		int entropy_count, orig;
-retry:
-		entropy_count = orig = ACCESS_ONCE(r->entropy_count);
 		/* If limited, never pull more than available */
 		if (r->limit)
 			ibytes = min_t(size_t, ibytes, have_bytes - reserved);
