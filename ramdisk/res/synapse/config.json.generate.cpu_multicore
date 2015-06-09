@@ -1,0 +1,120 @@
+#!/sbin/busybox sh
+
+LITTLEFREQS='100000:"200 MHz", 150000:"300 MHz", 200000:"400 MHz", 250000:"500 MHz", 300000:"600 MHz", 350000:"700 MHz", 400000:"800 MHz", 450000:"900 MHz", 500000:"1000 MHz", 550000:"1100 MHz", 600000:"1200 MHz", 650000:"1300 MHz"'
+
+cat << CTAG
+{
+    name:CPU MULTICORE,
+    elements:[
+	{ SPane:{
+		title:"Exynos Dynamic CPU Hotplug"
+	}},
+	{ SDescription:{
+		description:" Exynos Dynamic CPU Hotplug mode for A7 LITTLE cores."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+        { SSeekBar:{
+                title:"Exynos Dynamic CPU Hotplug FREQ",
+		description:" Sets Hotplug frequency limit for when the kernel switches (OFF or ON) CPU1, CPU2, or CPU3. Default is 500 MHz.",
+                default:`cat /sys/devices/system/cpu/cpu0/cpufreq/normalmin_freq`,
+                action:"generic /sys/devices/system/cpu/cpu0/cpufreq/normalmin_freq",
+                values:{
+`
+                        echo $LITTLEFREQS
+`               }
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SSeekBar:{
+                title:"Hotplug CPU UP Load",
+		description:" Default is 4.",
+		min:0,
+		max:10,
+		step:1,
+                default:`cat /sys/devices/system/cpu/cpu0/cpufreq/hotplug_cpu_up_load`,
+                action:"generic /sys/devices/system/cpu/cpu0/cpufreq/hotplug_cpu_up_load",
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SSeekBar:{
+                title:"Hotplug CPU UP Boost",
+		description:" Set to 30% for possible battery savings. Default is 0.",
+		min:0,
+		max:100,
+		unit:" %",
+		step:5,
+                default:`cat /sys/devices/system/cpu/cpu0/cpufreq/hotplug_cpu_up_boost`,
+                action:"generic /sys/devices/system/cpu/cpu0/cpufreq/hotplug_cpu_up_boost",
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SSeekBar:{
+                title:"Hotplug CPU DOWN Hysteresis",
+		description:" Default is 20.",
+		min:0,
+		max:100,
+		unit:" %",
+		step:5,
+                default:`cat /sys/devices/system/cpu/cpu0/cpufreq/hotplug_cpu_down_hysteresis`,
+                action:"generic /sys/devices/system/cpu/cpu0/cpufreq/hotplug_cpu_down_hysteresis",
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SPane:{
+		title:"CPU Multicore Power Saving",
+		description:" Try to group tasks into the least cores possible. The higher the value, the more aggressive the grouping. With 0 being highest performance and least power savings and level 2 indicating maximum power savings even at the cost of slight performance degradation. Default is 0:Disabled.",
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SDescription:{
+		description:" 0 - Performance: No power saving load balance (default)."
+	}},
+	{ SDescription:{
+		description:" 1 - Balanced: Fill one thread/core/package first for long running threads."
+	}},
+	{ SDescription:{
+		description:" 2 - Battery: Also bias task wakeups to semi-idle CPU package for power savings."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SSeekBar:{
+		title:"sched_mc_power_savings",
+		default:`cat /sys/devices/system/cpu/sched_mc_power_savings`,
+		action:"generic /sys/devices/system/cpu/sched_mc_power_savings",
+		values:{
+			`SMCPS='0:"0: Disabled", 1:"1: Enabled", 2:"2: Aggressive"'
+			echo $SMCPS`
+		}
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Power-efficient Workqueues",
+		description:" Enable or disable Power-efficient Workqueues will help to reduce power consumption at the cost of slight performance overhead. By enabling this, PE workqueues are used for unbound scheduled work to save load on sibling CPU cores and queuing work on CPU 0. Default is Enabled.",
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SOptionList:{
+		default:`cat /sys/module/workqueue/parameters/power_efficient`,
+		action:"generic /sys/module/workqueue/parameters/power_efficient",
+		values:{
+			`PEWQ='N:"Disabled", Y:"Enabled"'
+			echo $PEWQ`
+		}
+	}},
+	{ SDescription:{
+		description:""
+	}},
+    ]
+}
+CTAG

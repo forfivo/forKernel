@@ -1,0 +1,49 @@
+#!/sbin/busybox sh
+
+cat << CTAG
+{
+    name:SECURITY,
+    elements:[
+	{ SPane:{
+		title:"Enable or Disable KNOX",
+		description:" Disabling will prevent Samsung security feature and allow some apps to run outside the secure container. KEEP DISABLED !!"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SDescription:{
+		description:" NOTE: This process can take ~1 minute and device may be UNRESPONSIVE during this time, PLEASE WAIT for the process to finish !"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SDescription:{
+		description:" After set Disabled or Enabled, set to NO_ACTION so Synapse will complete loading faster every boot ! KNOX will still be Disabled or Enabled."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SOptionList:{
+		default:`echo $(/res/synapse/actions/security knox_security)`,
+		action:"security knox_security",
+		values:[NO_ACTION, Disabled, Enabled,]
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"SELinux Status",
+		description:" Allows you to change your SELinux (Security-Enhanced Linux) Status from Enforcing (policy is enforced) to Permissive (prints warnings instead of enforcing). Default is Permissive.",
+	}},
+	{ SOptionList:{
+		default:`getenforce`,
+		action:"devtools selinux",
+		values:[ Enforcing, Permissive
+		],
+	}},
+	{ SDescription:{
+		description:""
+	}},
+    ]
+}
+CTAG

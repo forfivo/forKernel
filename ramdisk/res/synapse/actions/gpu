@@ -1,0 +1,26 @@
+# By UpInTheAir for SkyHigh kernels
+
+BB=/sbin/busybox;
+
+case $1 in
+gpu_control)
+  $BB mount -t rootfs -o remount,rw rootfs;
+  P=/res/synapse/SkyHigh/gpugov
+  if [ ! -z $2 ]; then
+  if [ $2 == Battery ]; then
+    echo Battery > $P
+  elif [ $2 == Ondemand ]; then
+    echo Ondemand > $P
+  elif [ $2 == Performance ]; then
+    echo Performance > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == Battery ]; then
+    echo Battery
+  elif [ $copy == Ondemand ]; then
+    echo Ondemand
+  elif [ $copy == Performance ]; then
+    echo Performance
+  fi
+  ;;
+esac

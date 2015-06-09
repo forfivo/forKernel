@@ -1,0 +1,107 @@
+#!/sbin/busybox sh
+
+cat << CTAG
+{
+    name:CPU FREQ,
+    elements:[
+        { SLiveLabel:{
+                  title:"CPU temperature",
+                  description:" Temperature sensor data as read from the A15 cores. The A7 cores do not have dedicated sensors.",
+                  refresh:500,
+                  action:"echo \$(echo \$(cat /sys/devices/platform/exynos5-tmu/curr_temp | tr , \"\\n\") | { read C0 C1 C2 C3; echo \"Core 0: \${C0%?}°C@nCore 1: \${C1%?}°C@nCore 2: \${C2%?}°C@nCore 3: \${C3%?}°C\"; })"
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { STitleBar:{
+                title:"CPUFreq scaling"
+        }},
+	{ SDescription:{
+		description:" Note: Settings may automatically change due to Samsung DVFS. For better control, suggest to disable DVFS using Wanam's <a href='http://forum.xda-developers.com/xposed/modules/app-disable-samsung-touchwiz-dvfs-t2676916'>DVFS Disabler</a> app."
+	}},
+	{ SDescription:{
+		description:""
+	}},	
+        { SLiveLabel:{
+                  title:"CPU frequency",
+                  description:" Current frequency and active cluster.",
+                  refresh:500,
+                  action:"FREQ=\$(cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq); [[ \$FREQ -lt 651000 ]] && FREQ=\$(expr \$FREQ \\\\* 2) && L=\"\${FREQ%???} MHz (A7)\" || L=\"\${FREQ%???} MHz (A15)\"; echo \$L;"
+        }},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SSeekBar:{
+       		title:"CPU MAX frequency",
+		description:" Set the maximum frequency the CPU scales up to.",
+		default:`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq`,
+		action:"generic /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq",
+		values:{
+`
+			while read FREQ TIME; do
+				if [ $FREQ -lt 651000 ]; then
+					LABEL=$(expr $FREQ \* 2)
+					LABEL=$(expr $LABEL / 1000)
+				else
+					LABEL=$(expr $FREQ / 1000)
+				fi
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
+`
+		}
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SSeekBar:{
+       		title:"CPU MIN frequency",
+		description:" Set the minimum frequency the CPU scales down to.",
+		default:`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq`,
+		action:"generic /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq",
+		values:{
+`
+			while read FREQ TIME; do
+				if [ $FREQ -lt 651000 ]; then
+					LABEL=$(expr $FREQ \* 2)
+					LABEL=$(expr $LABEL / 1000)
+				else
+					LABEL=$(expr $FREQ / 1000)
+				fi
+				echo "$FREQ:\"${LABEL} MHz\", "
+			done < /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
+`
+		}
+	}},
+	{ SDescription:{
+		description:""
+	}},
+        { SPane:{
+                title:"Device State"
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SLiveLabel:{
+                title:"A15 big Cores time in states",
+		refresh:2500,
+		action:"live LiveCPU_big_Time 0 9"
+	}},
+	{ SLiveLabel:{
+		refresh:2500,
+		action:"live LiveCPU_big_Time 10 13"
+	}},
+	{ SLiveLabel:{
+                title:"A7 LITTLE Cores time in states",
+		refresh:2500,
+		action:"live LiveCPU_LITTLE_Time 14 23"
+	}},
+	{ SLiveLabel:{
+		refresh:2500,
+		action:"live LiveCPU_LITTLE_Time 24 26"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+    ]
+}
+CTAG

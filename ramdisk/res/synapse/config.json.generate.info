@@ -1,0 +1,127 @@
+#!/sbin/busybox sh
+
+cat << CTAG
+{
+    name:INFO,
+    elements:[
+	{ SPane:{
+		title:"Kernel Build by",
+		description:" <a href='http://forum.xda-developers.com/member.php?u=2806563'>UpInTheAir</a> 12th March 2015."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Kernel Thread",
+		description:" <a href='http://forum.xda-developers.com/galaxy-tab-s/orig-development/kernel-skyhigh-tw-kernel-t2806563'>XDA Developers</a>"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Special Features",
+		description:" Work-In-Progress......."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Source",
+		description:" Modified & compiled from Samsung OSRC: <a href='https://github.com/UpInTheAir/Galaxy-Tab-S-Kernel/commits/SkyHigh'>GitHub</a>."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Special Thanks to"
+	}},
+	{ SDescription:{
+		description:" AndreiLux, halaszk88 & all Devs that inspire me to cherry-pick from and adapt to this kernel<a href=''></a>"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Kernel Version"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default version"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"ASV Group",
+		description:"Values: from 0 (Lowest) to 14 (Highest). The higher the ASV, the higher frequencies your device can run and lower voltages"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"show asv"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Build"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default build"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Android Version"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default android_version"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Build Date"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default date"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Baseband"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default baseband"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Bootloader"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default bootloader"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Serial"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default serial"
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+    ]
+}
+CTAG

@@ -1,0 +1,22 @@
+# By UpInTheAir for SkyHigh kernels
+
+BB=/sbin/busybox;
+
+case $1 in
+work_queue)
+  $BB mount -t rootfs -o remount,rw rootfs;
+  P=/sys/module/workqueue/parameters/power_efficient
+  if [[ ! -z $2 ]]; then
+  if [ $2 = "Disabled" ]; then
+    echo N > $P
+  elif [ $2 = "Enabled" ]; then
+    echo Y > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+esac
