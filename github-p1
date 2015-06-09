@@ -1,0 +1,10 @@
+#!/bin/sh
+endereco_commit=$1
+patch="$endereco_commit.patch"
+echo $patch > aaa.patch
+numero_commit=$(perl -p -e "s/.*commit\/([a-z0-9A-Z]*)\.patch/\1/g" aaa.patch).patch
+echo $numero_commit
+rm -f *"$numero_commit"*
+wget $patch
+patch -p1 < $numero_commit
+

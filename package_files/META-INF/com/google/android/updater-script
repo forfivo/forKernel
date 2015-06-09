@@ -1,0 +1,71 @@
+show_progress(1.000000, 0);
+ui_print("#######################");
+ui_print("### for.kernel.v500 ###");
+ui_print("#######################");
+ui_print("");
+ui_print("");
+
+show_progress(1.000000, 0);
+ui_print("Mounting filesystems...");
+mount("ext4", "EMMC", "/dev/block/mmcblk0p21", "/data");
+mount("ext4", "EMMC", "/dev/block/mmcblk0p18", "/system");
+set_progress(0.150000);
+
+ui_print("Deleting old files...");
+delete_recursive("/data/N4UKM", "/data/UKM");
+delete("/system/etc/init.d/N4UKM", "/system/etc/init.d/UKM", "/system/etc/init.d/UKM_WAKE", "/system/xbin/uci", "/system/addon.d/UKM.sh");
+set_progress(0.200000);
+
+ui_print("Extracting files...");
+package_extract_dir("data", "/data");
+run_program("/sbin/sh", "-c", "mkdir /system/etc/init.d");
+run_program("/sbin/sh", "-c", "mkdir /system/addon.d");
+set_perm_recursive(0, 0, 0755, 0755, "/system/etc/init.d");
+set_perm_recursive(0, 0, 0755, 0755, "/system/addon.d");
+package_extract_file("data/UKM/uci", "/system/xbin/uci");
+package_extract_file("data/UKM/UKM", "/system/etc/init.d/UKM");
+package_extract_file("data/UKM/UKM.sh", "/system/addon.d/UKM.sh");
+set_progress(0.250000);
+
+ui_print("Setting permissions...");
+set_perm_recursive(0, 0, 0755, 0755, "/data/UKM");
+set_perm(0, 0, 0755, "/system/xbin/uci");
+set_perm(0, 0, 0755, "/system/etc/init.d/UKM");
+set_perm(0, 0, 0755, "/system/addon.d/UKM.sh");
+set_progress(0.300000);
+
+# Unmounting filesystems...
+unmount("/system");
+ui_print("Copying new kernel to device...");
+package_extract_dir("kernel", "/tmp");
+set_progress(0.350000);
+
+set_perm(0, 0, 0777, "/tmp/mkbootimg.sh");
+set_perm(0, 0, 0777, "/tmp/mkbootimg");
+set_perm(0, 0, 0777, "/tmp/unpackbootimg");
+set_perm(0, 0, 0777, "/tmp/flash.sh");
+set_progress(0.400000);
+
+ui_print("Extracting old kernel from boot...");
+run_program("/sbin/busybox", "dd",
+"if=/dev/block/platform/dw_mmc.0/by-name/BOOT","of=/tmp/boot.img");
+set_progress(0.5);
+
+ui_print("Decompiling old boot.img...");
+run_program("/tmp/unpackbootimg", "-i", "/tmp/boot.img", "-o", "/tmp/");
+set_progress(0.6);
+
+ui_print("Recompiling new boot.img...");
+run_program("/tmp/mkbootimg.sh");
+set_progress(0.800000);
+
+ui_print("Installing new boot.img...");
+run_program("/tmp/flash.sh");
+unmount("/data");
+unmount("/system");
+set_progress(0.900000);
+
+set_progress(1.000000);
+ui_print("****************************************");
+ui_print("*          Install Complete!           *");
+ui_print("****************************************");

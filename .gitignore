@@ -1,3 +1,14 @@
+#
+# NOTE! Don't add files that are generated in specific
+# subdirectories here. Add them in the ".gitignore" file
+# in that subdirectory instead.
+#
+# NOTE! Please use 'git ls-files -i --exclude-standard'
+# command after changing this file, to see if there are
+# any tracked files which get ignored after the change.
+#
+# Normal rules
+#
 /arch/arm/boot/compressed/piggy.gzip
 /arch/arm/boot/compressed/piggy.lzma
 /arch/arm/boot/compressed/piggy.lzo
@@ -94,6 +105,10 @@ modules.builtin
 /arch/arm/boot/zImage
 /usr/gen_init_cpio
 /usr/initramfs_data.cpio
+
+#
+# Top-level generic files
+#
 /tags
 /TAGS
 /linux
@@ -102,8 +117,21 @@ modules.builtin
 /System.map
 /Module.markers
 /Module.symvers
+
+#
+# Debian directory (make deb-pkg)
+#
+/debian/
+
+#
+# git files that we don't want to ignore even it they are dot-files
+#
 !.gitignore
 !.mailmap
+
+#
+# Generated include files
+#
 include/config
 include/linux/version.h
 include/generated
@@ -113,15 +141,24 @@ kernel/relocate_kernel_64.S
 drivers/tty/vt/defkeymap.c
 drivers/tty/vt/consolemap_deftbl.c
 kernel/timeconst.h
+
+# stgit generated dirs
 patches-*
+
+# quilt's files
 patches
 series
+
+# cscope files
 cscope.*
 ncscope.*
+
+# gnu global files
 GPATH
 GRTAGS
 GSYMS
 GTAGS
+
 *.orig
 *~
 \#*#
@@ -227,3 +264,4 @@ GTAGS
 /vmlinuz*
 /Hulk*
 /output_*
+output_zips
