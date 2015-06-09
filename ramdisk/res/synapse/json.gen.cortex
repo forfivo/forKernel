@@ -1,0 +1,296 @@
+#!/sbin/busybox sh
+
+cat << CTAG
+{
+    name:CORTEX,
+    elements:[
+	{ SDescription:{
+		description:" This script will manipulate many kernel settings, based on chosen Synapse settings and screen state (ON or OFF) - we call it CortexBrain."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Cortexbrain-Background-Process (Master Switch)",
+		description:" Enable or disable the background-process from CortexBrain. If you disable it, you will lose the function that auto applies settings for screen state (ON or OFF)."
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { SOptionList:{
+                default:`echo $(/res/synapse/actions/cortex cortexbrain_background_process)`,
+                action:"cortex cortexbrain_background_process",
+                values:[Disabled, Enabled,]
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { SLiveLabel:{
+                title:"Cortexbrain_background Status",
+                refresh:3000,
+		action:"live check_service"
+        }},
+	{ SDescription:{
+		description:"\n"
+	}},
+	{ SDescription:{
+		description:" NOTE: The buttons below are only needed to register cortexbrain changes. User does NOT need to push, because changes are auto applied via Synapse."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SButton:{
+		label:"APPLY SETTINGS NOW",
+		action:"sh /res/synapse/actions/cortex_start"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SButton:{
+		label:"Apply GPU GOV SETTINGS",
+		action:"sh /res/synapse/actions/gpucontrol"
+	}},
+	{ SDescription:{
+		description:"\n"
+	}},
+        { SPane:{
+                title:"Custom DVFS for TW ROMS",
+                description:" Enable to use custom TW DVFS power saving limits when you disable Samsung TW DVFS with Wanam Xposed module. CPU A15 big Cores will be limited to 1400 MHz in power save mode. If enabled, kernel is limited normally when powersave mode is set by ROM. DO NOT ENABLE if you are NOT disabling base Samsung TW DVFS. Default is Disabled."
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { SOptionList:{
+                default:`echo $(/res/synapse/actions/cortex cortexbrain_dvfs_pwm)`,
+                action:"cortex cortexbrain_dvfs_pwm",
+                values:[Disabled, Enabled,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/cortex_start"
+					],
+				}
+		]
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { SPane:{
+		title:"Power-efficient Workqueues",
+		description:" Power-efficient Workqueues will help to reduce power consumption at the cost of slight performance overhead. By enabling this, PEWQ is used for unbound scheduled work to save load on sibling CPU cores and queuing work on CPU 0. PEWQ is statically Enabled during screen OFF. Default is Disabled (screen ON)."
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { SOptionList:{
+                default:`echo $(/res/synapse/actions/cortex cortexbrain_power_efficient)`,
+                action:"cortex cortexbrain_power_efficient",
+                values:[Disabled, Enabled,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/cortex_start"
+					],
+				}
+		]
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Kernel tweaks",
+		description:" Enable or Disable Kernel-Tweaks"
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { SOptionList:{
+                default:`echo $(/res/synapse/actions/cortex cortexbrain_kernel)`,
+                action:"cortex cortexbrain_kernel",
+                values:[Disabled, Enabled,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/cortex_start"
+					],
+				}
+		]
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Memory tweaks",
+		description:" Enable or Disable Memory-Tweaks"
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { SOptionList:{
+                default:`echo $(/res/synapse/actions/cortex cortexbrain_memory)`,
+                action:"cortex cortexbrain_memory",
+                values:[Disabled, Enabled,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/cortex_start"
+					],
+				}
+		]
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"System tweaks",
+		description:" Enable or Disable System-Tweaks. Enable Hardware Rendering, render UI with GPU and more. NOTE: If you Disable, uncheck Force GPU Rendering in device Settings > Developer options and REBOOT !"
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { SOptionList:{
+                default:`echo $(/res/synapse/actions/cortex cortexbrain_system)`,
+                action:"cortex cortexbrain_system",
+                values:[Disabled, Enabled,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/cortex_start"
+					],
+				}
+		]
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Battery tweaks",
+		description:" Enable or Disable Battery-Tweaks"
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { SOptionList:{
+                default:`echo $(/res/synapse/actions/cortex cortexbrain_battery)`,
+                action:"cortex cortexbrain_battery",
+                values:[Disabled, Enabled,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/cortex_start"
+					],
+				}
+		]
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Network tweaks",
+		description:" Enable or Disable Network-Tweaks"
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { SOptionList:{
+                default:`echo $(/res/synapse/actions/cortex cortexbrain_network)`,
+                action:"cortex cortexbrain_network",
+                values:[Disabled, Enabled,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/cortex_start"
+
+					],
+				}
+		]
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Android Logger control",
+		description:" Save the logcat (app/system debug output) to file. AUTO will enable logcat when screen ON and disable when OFF."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SOptionList:{
+		default:`echo $(/res/synapse/actions/cortex cortexbrain_android_logger)`,
+                action:"cortex cortexbrain_android_logger",
+		values:[Disabled, Auto,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/cortex_start"
+					],
+				}
+		]
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SButton:{
+		label:"Save logcat",
+		action:"log logcat"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Kernel Logger control",
+		description:" Save the dmesg (active kernel output) or last_ksmg (same as dmesg but from the last shutdown). AUTO will enable dmesg when screen ON and disable when OFF."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SOptionList:{
+		default:`echo $(/res/synapse/actions/cortex cortexbrain_kernel_logger)`,
+                action:"cortex cortexbrain_kernel_logger",
+		values:[Disabled, Auto,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/cortex_start"
+					],
+				}
+		]
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SButton:{
+		label:"Save dmesg",
+		action:"log dmesg"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SButton:{
+		label:"Save last_kmsg",
+		action:"log kmsg"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+    ]
+}
+CTAG

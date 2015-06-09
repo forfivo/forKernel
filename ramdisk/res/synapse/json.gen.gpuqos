@@ -1,0 +1,340 @@
+#!/sbin/busybox sh
+
+CPUFREQS='2100:"2100 MHz", 2000:"2000 MHz", 1900:"1900 MHz", 1800:"1800 MHz", 1700:"1700 MHz", 1600:"1600 MHz", 1500:"1500 MHz", 1400:"1400 MHz", 1300:"1300 MHz", 1200:"1200 MHz", 1100:"1100 MHz", 1000:"1000 MHz", 900:"900 MHz", 800:"800 MHz", 650:"1300 MHz", 600:"1200 MHz", 550:"1100 MHz", 500:"1000 MHz", 450:"900 MHz", 400:"800 MHz", 350:"700 MHz", 300:"600 MHz", 250:"500 MHz", 200:"400 MHz", 150:"300 MHz", 100:"200 MHz"'
+MIFFREQS='933:"933 MHz", 800:"800 MHz", 733:"733 MHz", 667:"667 MHz", 533:"533 MHz", 400:"400 MHz", 266:"266 MHz", 200:"200 MHz", 160:"160 MHz", 133:"133 MHz"'
+INTFREQS='600:"600 MHz", 500:"500 MHz", 480:"480 MHz", 460:"460 MHz", 440:"440 MHz", 400:"400 MHz", 333:"333 MHz", 222:"222 MHz", 111:"111 MHz", 83:"83 MHz"'
+
+cat << CTAG
+{
+    name:GPU QoS,
+    elements:[
+        { SPane:{
+		title:"GPU MIF QoS scaling settings",
+		description:" By editing the following configurables you can change the performance behaviour of the GPU."
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SSeekBar:{
+       	title:"100 MHz",
+		default: 160,
+		unit:" MHz",
+		action:"gpumif 100",
+		values:{
+`
+			echo $MIFFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"177 MHz",
+		default: 160,
+		unit:" MHz",
+		action:"gpumif 177",
+		values:{
+`
+			echo $MIFFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"266 MHz",
+		default: 400,
+		unit:" MHz",
+		action:"gpumif 266",
+		values:{
+`
+			echo $MIFFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"350 MHz",
+		default: 667,
+		unit:" MHz",
+		action:"gpumif 350",
+		values:{
+`
+			echo $MIFFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"420 MHz",
+		default: 800,
+		unit:" MHz",
+		action:"gpumif 420",
+		values:{
+`
+			echo $MIFFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"480 MHz",
+		default: 800,
+		unit:" MHz",
+		action:"gpumif 480",
+		values:{
+`
+			echo $MIFFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"533 MHz",
+		default: 800,
+		unit:" MHz",
+		action:"gpumif 533",
+		values:{
+`
+			echo $MIFFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"600 MHz",
+		default: 800,
+		unit:" MHz",
+		action:"gpumif 600",
+		values:{
+`
+			echo $MIFFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"667 MHz",
+		default: 800,
+		unit:" MHz",
+		action:"gpumif 667",
+		values:{
+`
+			echo $MIFFREQS
+`
+		}
+	}},
+	{ SDescription:{
+		description:""
+	}},
+        { SPane:{
+		title:"GPU INT QoS scaling settings",
+		description:" By editing the following configurables you can change the performance behaviour of the GPU."
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SSeekBar:{
+       	title:"100 MHz",
+		default: 83,
+		unit:" MHz",
+		action:"gpuint 100",
+		values:{
+`
+			echo $INTFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"177 MHz",
+		default: 83,
+		unit:" MHz",
+		action:"gpuint 177",
+		values:{
+`
+			echo $INTFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"266 MHz",
+		default: 222,
+		unit:" MHz",
+		action:"gpuint 266",
+		values:{
+`
+			echo $INTFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"350 MHz",
+		default: 333,
+		unit:" MHz",
+		action:"gpuint 350",
+		values:{
+`
+			echo $INTFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"420 MHz",
+		default: 400,
+		unit:" MHz",
+		action:"gpuint 420",
+		values:{
+`
+			echo $INTFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"480 MHz",
+		default: 400,
+		unit:" MHz",
+		action:"gpuint 480",
+		values:{
+`
+			echo $INTFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"533 MHz",
+		default: 400,
+		unit:" MHz",
+		action:"gpuint 533",
+		values:{
+`
+			echo $INTFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"600 MHz",
+		default: 400,
+		unit:" MHz",
+		action:"gpuint 600",
+		values:{
+`
+			echo $INTFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"667 MHz",
+		default: 400,
+		unit:" MHz",
+		action:"gpuint 667",
+		values:{
+`
+			echo $INTFREQS
+`
+		}
+	}},
+	{ SDescription:{
+		description:""
+	}},
+        { SPane:{
+		title:"GPU CPU QoS scaling settings",
+		description:" By editing the following configurables you can change the performance behaviour of the GPU."
+        }},
+	{ SDescription:{
+		description:""
+	}},
+		{ SSeekBar:{
+       		title:"100 MHz",
+		default: 250,
+		unit:" MHz",
+		action:"gpucpu 100",
+		values:{
+`
+			echo $CPUFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"177 MHz",
+		default: 250,
+		unit:" MHz",
+		action:"gpucpu 177",
+		values:{
+`
+			echo $CPUFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"266 MHz",
+		default: 250,
+		unit:" MHz",
+		action:"gpucpu 266",
+		values:{
+`
+			echo $CPUFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"350 MHz",
+		default: 250,
+		unit:" MHz",
+		action:"gpucpu 350",
+		values:{
+`
+			echo $CPUFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"420 MHz",
+		default: 250,
+		unit:" MHz",
+		action:"gpucpu 420",
+		values:{
+`
+			echo $CPUFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"480 MHz",
+		default: 650,
+		unit:" MHz",
+		action:"gpucpu 480",
+		values:{
+`
+			echo $CPUFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"533 MHz",
+		default: 1200,
+		unit:" MHz",
+		action:"gpucpu 533",
+		values:{
+`
+			echo $CPUFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"600 MHz",
+		default: 1400,
+		unit:" MHz",
+		action:"gpucpu 600",
+		values:{
+`
+			echo $CPUFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"667 MHz",
+		default: 1600,
+		unit:" MHz",
+		action:"gpucpu 667",
+		values:{
+`
+			echo $CPUFREQS
+`
+		}
+	}},
+	{ SDescription:{
+		description:""
+	}},
+    ]
+}
+CTAG

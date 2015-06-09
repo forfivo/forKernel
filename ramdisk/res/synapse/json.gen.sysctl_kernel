@@ -1,0 +1,45 @@
+#!/sbin/busybox sh
+
+cat << CTAG
+{
+    name:KERNEL SYSCTL,
+    elements:[
+	{ STitleBar:{
+		title:"KERNEL SYSCTL"
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+	{ STreeDescriptor:{
+		path:"/proc/sys/kernel",
+		generic: {
+			directory: {},
+			element: {
+				SGeneric: { title:"@BASENAME" }
+			}
+		},
+		exclude: [
+			"auto_msgmni",
+			"cad_pid",
+			"cap_last_cap",
+			"keys",
+			"nmi_watchdog",
+			"osrelease",
+			"ostype",
+			"pty",
+			"random",
+			"randomize_va_space",
+			"sched_domain",
+			"sched_latency_ns",
+			"sched_min_granularity_ns",
+			"sched_rr_timeslice_ms",
+			"sched_wakeup_granularity_ns",
+			"sg_big_buff",
+			"usermodehelper",
+			"version",
+			"watchdog"
+		]
+	}},
+    ]
+}
+CTAG

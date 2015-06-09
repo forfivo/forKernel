@@ -1,0 +1,136 @@
+#!/sbin/busybox sh
+
+cat << CTAG
+{
+    name:INFO,
+    elements:[
+	{ SPane:{
+		title:"Kernel Build by",
+		description:" <a href='http://forum.xda-developers.com/member.php?u=2806563'>UpInTheAir</a> 15th June 2015."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Kernel Thread",
+		description:" <a href='http://forum.xda-developers.com/galaxy-tab-s/orig-development/kernel-skyhigh-tw-ll-kernels-t3132652'>XDA Developers</a>"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Special Features",
+		description:" Work-In-Progress......."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Source",
+		description:" Modified & compiled from Samsung OSRC: <a href='https://github.com/UpInTheAir/Samsung-Galaxy-Tab-S-Kernel/commits/SkyHigh-5.0.2'>GitHub</a>."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Special Thanks to"
+	}},
+	{ SDescription:{
+		description:" All Devs that inspire me to cherry-pick from and allow me to adapt to this kernel. In particular, AndreiLux and halaszk88<a href=''></a>"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"NO Thanks to"
+	}},
+	{ SDescription:{
+		description:" All Trolls that take exception to my matter of fact approach !! If you can't be bothered to RTFM, then don't bother posting, get it. Special mention to those lame ass Devs that KANG my work without permission, then have the gall to call me names and question my work....<a href=''></a>"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Kernel Version"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default version"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"ASV Group",
+		description:"Values: from 0 (Lowest) to 14 (Highest). The higher the ASV, the higher frequencies your device can run and lower voltages"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"show asv"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Build"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default build"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Android Version"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default android_version"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Build Date"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default date"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Baseband"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default baseband"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Bootloader"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default bootloader"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Serial"
+	}},
+	{ SLiveLabel:{
+		refresh:0,
+		action:"default serial"
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+    ]
+}
+CTAG

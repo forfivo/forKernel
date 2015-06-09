@@ -1,0 +1,141 @@
+#!/sbin/busybox sh
+
+# Modified from Halask script by UpInTheAir for SkyHigh kernel
+
+GPU_GOV=$(cat /res/synapse/SkyHigh/gpugov);
+MAX_FREQ_NOW=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq_gpu);
+MIN_FREQ_NOW=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq_gpu);
+
+if [ "$GPU_GOV" == "Battery" ]; then
+	if [ "$MAX_FREQ_NOW" == "667" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "98 95 90 85 80 75 70 65 60" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "600" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "98 95 90 85 80 75 70 65" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "533" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "98 95 90 85 80 75 70" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "480" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "98 95 90 85 80 75" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "420" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "98 95 90 85 80" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "350" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "98 95 90 85" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	fi;
+
+	if [ "$MAX_FREQ_NOW" == "667" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "98 95 90 85 80 75 70 65" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "600" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "98 95 90 85 80 75 70" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "533" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "98 95 90 85 80 75" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "480" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "98 95 90 85 80" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "420" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "98 95 90 85" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "350" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "98 95 90" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	fi;
+
+	if [ "$MAX_FREQ_NOW" == "667" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "98 95 90 85 80 75 70" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "600" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "98 95 90 85 80 75" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "533" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "98 95 90 85 80" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "480" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "98 95 90 85" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "420" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "98 95 90" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "350" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "98 95" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	fi;
+fi;
+
+if [ "$GPU_GOV" == "Ondemand" ]; then
+	if [ "$MAX_FREQ_NOW" == "667" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "85 80 75 70 65 60 55 50 45" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "600" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "80 75 70 65 60 55 50 45" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "533" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "75 70 65 60 55 50 45" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "480" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "70 65 60 55 50 45" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "420" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "65 60 55 50 45" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "350" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "60 55 50 45" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	fi;
+
+	if [ "$MAX_FREQ_NOW" == "667" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "85 80 75 70 65 60 55 50" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "600" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "80 75 70 65 60 55 50" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "533" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "75 70 65 60 55 50" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "480" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "70 65 60 55 50" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "420" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "65 60 55 50" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "350" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "60 55 50" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	fi;
+
+	if [ "$MAX_FREQ_NOW" == "667" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "85 80 75 70 65 60 55" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "600" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "80 75 70 65 60 55" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "533" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "75 70 65 60 55" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "480" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "70 65 60 55" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "420" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "65 60 55" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "350" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "60 55" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	fi;
+fi;
+
+if [ "$GPU_GOV" == "Performance" ]; then
+	if [ "$MAX_FREQ_NOW" == "667" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "70 65 60 55 50 45 40 35 30" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "600" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "65 60 55 50 45 40 35 30" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "533" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "60 55 50 45 40 35 30" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "480" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "55 50 45 40 35 30" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "420" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "50 45 40 35 30" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	elif [ "$MAX_FREQ_NOW" == "350" ] && [ "$MIN_FREQ_NOW" == "100" ]; then
+		echo "45 40 35 30" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table; 
+	fi;
+
+	if [ "$MAX_FREQ_NOW" == "667" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "70 65 60 55 50 45 40 35" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "600" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "65 60 55 50 45 40 35" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "533" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "60 55 50 45 40 35" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "480" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "55 50 45 40 35" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "420" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "50 45 40 35" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "350" ] && [ "$MIN_FREQ_NOW" == "177" ]; then
+		echo "45 40 35" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	fi;
+
+	if [ "$MAX_FREQ_NOW" == "667" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "70 65 60 55 50 45 40" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "600" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "65 60 55 50 45 40" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "533" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "60 55 50 45 40" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "480" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "55 50 45 40" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "420" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "50 45 40" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	elif [ "$MAX_FREQ_NOW" == "350" ] && [ "$MIN_FREQ_NOW" == "266" ]; then
+		echo "45 40" > /sys/devices/system/cpu/cpu0/cpufreq/GPU_gov_table;
+	fi;
+fi;
+
+echo "Applied for Max: $MAX_FREQ_NOW MHz / Min: $MIN_FREQ_NOW MHz and $GPU_GOV profile";

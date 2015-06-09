@@ -1,0 +1,40 @@
+#!/sbin/busybox sh
+
+cat << CTAG
+{
+    name:CPU MULTICORE,
+    elements:[
+	{ SPane:{
+		title:"CPU Multicore Power Saving",
+		description:" Try to group tasks into the least cores possible. The higher the value, the more aggressive the grouping. With 0 being highest performance and least power savings and level 2 indicating maximum power savings even at the cost of slight performance degradation. Default is 0: Disabled.",
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SDescription:{
+		description:" 0 - Performance: No power saving load balance (default)."
+	}},
+	{ SDescription:{
+		description:" 1 - Balanced: Fill one thread/core/package first for long running threads."
+	}},
+	{ SDescription:{
+		description:" 2 - Battery: Also bias task wakeups to semi-idle CPU package for power savings."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SSeekBar:{
+		title:"sched_mc_power_savings",
+		default:`cat /sys/devices/system/cpu/sched_mc_power_savings`,
+		action:"generic /sys/devices/system/cpu/sched_mc_power_savings",
+		values:{
+			`SMCPS='0:"0: Disabled", 1:"1: Enabled", 2:"2: Aggressive"'
+			echo $SMCPS`
+		}
+	}},
+	{ SDescription:{
+		description:""
+	}},
+    ]
+}
+CTAG

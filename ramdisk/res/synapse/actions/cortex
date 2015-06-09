@@ -1,0 +1,172 @@
+# By UpInTheAir for SkyHigh SM-N915S kernels
+
+BB=/sbin/busybox;
+
+case $1 in
+cortexbrain_background_process)
+  P=/res/synapse/SkyHigh/cortexbrain_background_process
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+		pkill -f "/sbin/cortexbrain-tune.sh";
+		sed -i "s/cortexbrain_background_process=[0-1]*/cortexbrain_background_process=0/g" /sbin/cortexbrain-tune.sh;
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+			sed -i "s/cortexbrain_background_process=[0-1]*/cortexbrain_background_process=1/g" /sbin/cortexbrain-tune.sh;
+		if [ `pgrep -f "cortexbrain-tune.sh" | wc -l` == 0 ]; then
+			/sbin/cortexbrain-tune.sh > /dev/null 2>&1;
+		fi;
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+cortexbrain_dvfs_pwm)
+  P=/res/synapse/SkyHigh/cortexbrain_dvfs_pwm
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+cortexbrain_power_efficient)
+  P=/res/synapse/SkyHigh/cortexbrain_power_efficient
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+cortexbrain_kernel)
+  P=/res/synapse/SkyHigh/cortexbrain_kernel
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+cortexbrain_memory)
+  P=/res/synapse/SkyHigh/cortexbrain_memory
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+cortexbrain_system)
+  P=/res/synapse/SkyHigh/cortexbrain_system
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+cortexbrain_battery)
+  P=/res/synapse/SkyHigh/cortexbrain_battery
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+cortexbrain_network)
+  P=/res/synapse/SkyHigh/cortexbrain_network
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+cortexbrain_android_logger)
+  P=/res/synapse/SkyHigh/cortexbrain_android_logger
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Auto ]; then
+    echo 1 > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Auto
+  fi
+  ;;
+
+cortexbrain_kernel_logger)
+  P=/res/synapse/SkyHigh/cortexbrain_kernel_logger
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Auto ]; then
+    echo 1 > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Auto
+  fi
+  ;;
+
+esac

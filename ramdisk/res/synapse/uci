@@ -1,0 +1,29 @@
+#!/sbin/busybox sh
+
+BB=/sbin/busybox;
+
+CONFIG_JSON=/res/synapse/config.json
+ACTION_SCRIPTS=/res/synapse/actions/
+UCI_FILES=/res/synapse/SkyHigh/
+
+# Mount root as RW to apply tweaks and settings
+$BB mount -o remount,rw /;
+
+if [ ! -f $CONFIG_JSON ]; then
+
+	$BB chmod -R 755 $ACTION_SCRIPTS;
+	$BB chmod -R 755 $UCI_FILES;
+
+	source /res/synapse/json.generate > $CONFIG_JSON
+fi
+
+case "${1}" in
+  config)
+	$BB cat $CONFIG_JSON;;
+  configpath)
+	$BB echo $CONFIG_JSON;;
+  actionpath)
+	$BB echo $ACTION_SCRIPTS:/sbin;;
+  reset)
+	$BB rm -f $CONFIG_JSON;
+esac;

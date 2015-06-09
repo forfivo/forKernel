@@ -1,0 +1,287 @@
+#!/sbin/busybox sh
+
+cat << CTAG
+{
+    name:ADVANCED,
+    elements:[
+			`if [ -f "/sys/module/lowmemorykiller/parameters/minfree" ]; then
+				$BB echo '{ SPane:{
+					title:"Low Memory Killer",
+					description:" LMK Minfree controls how much memory each app type can hold, and is responsible for memory management for multitasking. All values are multiplied by 256 pages. Once values are applied, No_Action will be set, but User applied minfree values will stay."
+				}},
+      				{ SDescription:{
+					description:""
+      				}},
+				{ SOptionList:{
+					title:"LMK Profile",
+					description:" This option will auto-tune LMK minfree values as per selected profile. More aggressive equals more free RAM but more killed apps (less multi-tasking).\n",
+					default:No_Action,
+					action:"lmk_profile /res/synapse/SkyHigh/lmk_prof",
+					values:[ No_Action, Low, Medium, Default, Aggressive, Exterminate,
+					],
+					notify:[
+							{
+								on:APPLY,
+								do:[ REFRESH, APPLY ],
+								to:[ 
+										"lmk 1",
+										"lmk 2",
+										"lmk 3",
+										"lmk 4",
+										"lmk 5",
+										"lmk 6"
+								],
+							}
+					]
+				}},'
+					for LMK in 1 2 3 4 5 6; do
+						$BB echo '{ SSeekBar:{ '
+							case $LMK in
+								1)
+									$BB echo 'title:"Foreground App", description:" The application currenty on the screen and running.\n Default is 48.", default:48' ;;
+								2)
+									$BB echo 'title:"Visible App", description:" The application that is open and running in background.\n Default is 60.", default:60' ;;
+								3)
+									$BB echo 'title:"Secondary Server", description:" This is a service an application needs that is alive and ready.\n Default is 72.", default:72' ;;
+								4)
+									$BB echo 'title:"Hidden App", description:" An idle process that wakes up on application request.\n Default is 84.", default:84' ;;
+								5)
+									$BB echo 'title:"Content Provider", description:" Apps that provide data (content) to the system.\n Default is 96.", default:96' ;;
+								6)
+									$BB echo 'title:"Empty App", description:" Apps closed by the user but ready to run.\n Default is 120.", default:120' ;;
+							esac
+						$BB echo ', action:"lmk '${LMK}'",
+						unit:" MB", min:1, max:300 }},'
+					done
+			fi`
+      	{ SDescription:{
+		description:""
+      	}},
+      	{ SPane:{
+		title:"LMK Whitelist",
+		description:" Allows certain apps to be exempt from being killed until absolutely necessary to avoid out-of-memory (OOM)."
+     	}},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SCheckBox:{
+                label:"Do-Not-Kill System Processes List",
+                default:`cat /sys/module/lowmemorykiller/parameters/donotkill_sysproc`,
+                action:"generic /sys/module/lowmemorykiller/parameters/donotkill_sysproc"
+        }},
+      	{ SDescription:{
+		description:""
+      	}},
+	{ SOptionList:{
+		title:"Exempt System Processes",
+		action:"whitelist set sys",
+		default:`/res/synapse/actions/whitelist set sys`,
+		values:[
+`
+			for SYSPROC in \`/res/synapse/actions/whitelist list sys\`; do
+			  echo "\"$SYSPROC\","
+			done
+`
+		]
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SCheckBox:{
+                label:"Do-Not-Kill User Processes List",
+                default:`cat /sys/module/lowmemorykiller/parameters/donotkill_proc`,
+                action:"generic /sys/module/lowmemorykiller/parameters/donotkill_proc"
+        }},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SOptionList:{
+		title:"Exempt User Processes",
+		action:"whitelist set user",
+		default:`/res/synapse/actions/whitelist set user`,
+ 		values:[
+`
+			for PROC in \`/res/synapse/actions/whitelist list user\`; do
+			  echo "\"$PROC\","
+			done
+`
+		]
+	}},
+      	{ SDescription:{
+		description:""
+      	}},
+      	{ SDescription:{
+        	description:" The process lists above are view only. To add processes, check the SkyHigh/Synapse sdcard folder for the parsed files and add one process name per line. Lists updated on reboot.",
+      	}},
+      	{ SDescription:{
+		description:""
+      	}},
+      	{ SPane:{
+		title:"Kernel Entropy"
+      	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SLiveLabel:{
+		title:"Entropy Available",
+		refresh:1000,
+		action:"live entropy"
+	}},
+	{ SSeekBar:{
+		title:"Read Wakeup Threshold",
+        	description:"",
+		max:2048, min:64, step:64,
+		default:`cat /proc/sys/kernel/random/read_wakeup_threshold`,
+		action:"generic /proc/sys/kernel/random/read_wakeup_threshold"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SSeekBar:{
+		title:"Write Wakeup Threshold",
+        	description:"",
+		max:2048, min:64, step:64,
+		default:`cat /proc/sys/kernel/random/write_wakeup_threshold`,
+		action:"generic /proc/sys/kernel/random/write_wakeup_threshold"
+	}},
+      	{ SDescription:{
+		description:""
+	}},
+      	{ SPane:{
+		title:"Gentle Fair Sleepers"
+      	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SCheckBox:{
+		description:" Sleeper Fairness is a concept used by CFS which treat sleeping/waiting tasks as if they were in a run queue. This implies tasks which spend most of the time waiting for an user input and such will get a fair share of CPU when they need it. Disabling Gentle Fair Sleepers could improve UI responsiveness. Default is Disabled.",
+		label:"Enable Gentle Fair Sleepers",
+		default:`cat /sys/kernel/sched/gentle_fair_sleepers`,
+		action:"generic /sys/kernel/sched/gentle_fair_sleepers"
+	}},
+      	{ SDescription:{
+		description:""
+	}},
+      	{ SPane:{
+		title:"Arch Power"
+      	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SCheckBox:{
+		description:" Arch Power patch causes arch dependent power functions to be used instead of generic high resolution timer ticks and double ticks. Default is Enabled.",
+		label:"Enable Arch Power",
+		default:`cat /sys/kernel/sched/arch_power`,
+		action:"generic /sys/kernel/sched/arch_power"
+	}},
+      	{ SDescription:{
+		description:""
+	}},
+      	{ SPane:{
+		title:"Randomisation"
+      	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SSeekBar:{
+		title:"randomize_va_space",
+		description:" Disabling (0) virtual address randomisation may improve GUI responsiveness. Default is 2.\n",
+		max:2,
+		min:0,
+		step:1,
+		default:`cat /proc/sys/kernel/randomize_va_space`,
+		action:"generic /proc/sys/kernel/randomize_va_space"
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+      	{ SPane:{
+		title:"Dynamic management of the minimal timer slack value"
+      	}},
+	{ SDescription:{
+		description:" By activating the dynamic management of the minimal timer slack value, you can also use a different minimal timer slack value when the system has been suspended (sleep). The timer slack controller allows to set the minimal timer slack value for every process contained within a control group (cgroup). A timer slack allows the kernel to manage processes wakeup requests at some future time. Thanks to this feature, the kernel can set a specific timer slack for the involved processes, minimizing the number of wakeups and allowing a lower system's power consumption. More info: <a href='http://lwn.net/Articles/463357/'>Timer slack for developers</a>"
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SSeekBar:{
+		title:"Generic and core apps/processes (active)",
+		description:" Default is 0.\n",
+		max:100000,
+		min:0,
+		step:25000,
+		unit:" ns",
+		default:`cat /dev/cpuctl/timer_slack.min_slack_ns`,
+		action:"generic /dev/cpuctl/timer_slack.min_slack_ns"
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SSeekBar:{
+		title:"Generic and core apps/processes (suspend)",
+		description:" Default is 50000.\n",
+		max:100000,
+		min:0,
+		step:25000,
+		unit:" ns",
+		default:`cat /dev/cpuctl/timer_slack.min_slack_suspend_ns`,
+		action:"generic /dev/cpuctl/timer_slack.min_slack_suspend_ns"
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SSeekBar:{
+		title:"Apps/processes in foreground (active)",
+		description:" Default is 0.\n",
+		max:250000,
+		min:0,
+		step:25000,
+		unit:" ns",
+		default:`cat /dev/cpuctl/apps/timer_slack.min_slack_ns`,
+		action:"generic /dev/cpuctl/apps/timer_slack.min_slack_ns"
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SSeekBar:{
+		title:"Apps/processes in foreground (suspend)",
+		description:" Default is 250000.\n",
+		max:250000,
+		min:0,
+		step:25000,
+		unit:" ns",
+		default:`cat /dev/cpuctl/apps/timer_slack.min_slack_suspend_ns`,
+		action:"generic /dev/cpuctl/apps/timer_slack.min_slack_suspend_ns"
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SSeekBar:{
+		title:"Apps/processes in background and non interactive (active)",
+		description:" Default is 100000000.\n",
+		max:250000000,
+		min:0,
+		step:25000,
+		unit:" ns",
+		default:`cat /dev/cpuctl/apps/bg_non_interactive/timer_slack.min_slack_ns`,
+		action:"generic /dev/cpuctl/apps/bg_non_interactive/timer_slack.min_slack_ns"
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+	{ SSeekBar:{
+		title:"Apps/processes in background and non interactive (suspend)",
+		description:" Default is 250000000.\n",
+		max:250000000,
+		min:0,
+		step:25000,
+		unit:" ns",
+		default:`cat /dev/cpuctl/apps/bg_non_interactive/timer_slack.min_slack_suspend_ns`,
+		action:"generic /dev/cpuctl/apps/bg_non_interactive/timer_slack.min_slack_suspend_ns"
+	}},
+	{ SDescription:{
+		description:" "
+	}},
+    ]
+}
+CTAG

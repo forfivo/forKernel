@@ -1,0 +1,9 @@
+#!/sbin/busybox sh
+
+# By UpInTheAir for SkyHigh Samsung Galaxy Tab-S kernels
+
+BB=/sbin/busybox;
+
+$BB mount -t rootfs -o remount,rw rootfs;
+$BB sh /sbin/cortexbrain-tune.sh > /dev/null 2>&1;
+echo "cortexbrain settings applied";

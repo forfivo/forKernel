@@ -1,0 +1,156 @@
+#!/sbin/busybox sh
+
+cat << CTAG
+{
+    name:GPU,
+    elements:[
+        { SPane:{
+                title:"GPU state"
+        }},
+        { SLiveLabel:{
+                title:"GPU live frequency",
+                refresh:500,
+                action:"live gpu"
+        }},
+	{ SLiveLabel:{
+                title:"Time in States",
+		refresh:2500,
+		action:"live LiveGPUTime 0 8"
+	}},
+	{ SDescription:{
+		description:""
+	}},
+        { SPane:{
+                title:"Midgard GPU power policy control",
+                description:" COARSE DEMAND power policy controls only external power (PMU for G3D). It is better at saving power and performance. COARSE DEMAND turns off GPU power in case of being no job for 100ms and turns it on in case of incomming first job on the state of GPU off. Default is coarse_demand."
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SDescription:{
+		description:" DEMAND power policy controls internal core power when processing a job, so it can be controlled frequently rendering one frame. This frequent control affects job utilization, so power consumption on DVFS with demand power policy is higher than coarse_demand."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+        { SOptionList:{
+                title:"Mali power policy control",
+                default:`echo $(/res/synapse/actions/bracket-option /sys/devices/platform/mali.0/power_policy)`,
+                action:"bracket-option /sys/devices/platform/mali.0/power_policy",
+                values:[
+`
+                        for POLICY in \`cat /sys/devices/platform/mali.0/power_policy | sed -e 's/\]//;s/\[//'\`; do
+                          echo "\"$POLICY\","
+                        done
+`
+                ]
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Midgard GPU threshold policy control"
+        }},
+	{ SDescription:{
+		description:""
+	}},
+        { SOptionList:{
+                title:"GPU GOVERNOR up/down threshold control",
+                description:" Control when and how aggressive the GPU moves UP to next frequency step. Default profile is Ondemand.",
+		default:`echo $(/res/synapse/actions/gpu gpu_control)`,
+                action:"gpu gpu_control",
+		values:[Battery, Ondemand, Performance,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/gpucontrol"
+					],
+				}
+		]
+	}},
+	{ SDescription:{
+		description:""
+	}},
+        { SPane:{
+		title:"GPU scaling settings",
+		description:"By editing the following configurables you can change the performance behaviour of the GPU."
+        }},
+	{ SDescription:{
+		description:""
+	}},
+	{ SSeekBar:{
+       		title:"GPU MAX freq",
+		description:" Set the maximum frequency the GPU scales up to.",
+		default:`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq_gpu`,
+                unit:" MHz",
+		action:"generic /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq_gpu",
+                values:{
+`
+                        while read FREQ TIME; do
+                                        LABEL=$(expr $FREQ)
+                                echo "$FREQ:\"${LABEL} MHz\", "
+                        done < /sys/class/misc/mali0/device/time_in_state
+`
+                },
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/gpucontrol"
+					],
+				}
+		]
+	}},
+	{ SDescription:{
+		description:""
+	}},
+        { SSeekBar:{
+                title:"GPU MIN freq",
+                description:" Set the minimum frequency the GPU scales up to.",
+                default:`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq_gpu`,
+                unit:" MHz",
+                action:"generic /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq_gpu",
+                values:{
+`
+                        while read FREQ TIME; do
+                                        LABEL=$(expr $FREQ)
+                                echo "$FREQ:\"${LABEL} MHz\", "
+                        done < /sys/class/misc/mali0/device/time_in_state
+`
+                },
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/gpucontrol"
+					],
+				}
+		]
+	}},
+	{ SDescription:{
+		description:""
+	}},
+        { SPane:{
+		title:"GPU voltage control",
+		description:" Decreasing voltage will lower power consumption of the GPU. Increasing it on overclocked frequencies improves stability. Too low voltage may cause instabilities and freezes."
+        }},
+	{ SDescription:{
+		description:""
+	}},
+`
+while read FREQ VOLT; do
+        echo '{ SSeekBar:{'
+                echo 'title:"'$FREQ' MHz", default:'$VOLT', '
+                echo 'action:"gpuvolt '${FREQ}'", unit:" mV", weight:0.001, min:600000, max:1150000, step:6250 }}, '
+done < /sys/devices/system/cpu/cpu0/cpufreq/GPU_volt_table
+`
+	{ SDescription:{
+		description:" "
+	}},
+    ]
+}
+CTAG
