@@ -165,6 +165,7 @@ GTAGS
 /arch/arm/boot/compressed/ashldi3.S
 /arch/arm/boot/compressed/lib1funcs.S
 /arch/arm/boot/compressed/vmlinux.lds
+/arch/arm/boot/compressed/piggy.xzkern
 /firmware/ice40xx/i2c_top_bitmap_1.fw
 /firmware/ice40xx/i2c_top_bitmap_1.fw.gen.S
 /firmware/ice40xx/i2c_top_bitmap_2.fw
