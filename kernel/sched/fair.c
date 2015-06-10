@@ -871,6 +871,47 @@ static inline long calc_cfs_shares(struct cfs_rq *cfs_rq, struct task_group *tg)
 }
 # endif /* CONFIG_SMP */
 
+static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
+			    unsigned long weight)
+{
+	if (se->on_rq) {
+		/* commit outstanding execution time */
+		if (cfs_rq->curr == se)
+			update_curr(cfs_rq);
+		account_entity_dequeue(cfs_rq, se);
+	}
+
+	update_load_set(&se->load, weight);
+
+	if (se->on_rq)
+		account_entity_enqueue(cfs_rq, se);
+}
+
+static inline int throttled_hierarchy(struct cfs_rq *cfs_rq);
+
+static void update_cfs_shares(struct cfs_rq *cfs_rq)
+{
+	struct task_group *tg;
+	struct sched_entity *se;
+	long shares;
+
+	tg = cfs_rq->tg;
+	se = tg->se[cpu_of(rq_of(cfs_rq))];
+	if (!se || throttled_hierarchy(cfs_rq))
+		return;
+#ifndef CONFIG_SMP
+	if (likely(se->load.weight == tg->shares))
+		return;
+#endif
+	shares = calc_cfs_shares(cfs_rq, tg);
+
+	reweight_entity(cfs_rq_of(se), se, shares);
+}
+#else /* CONFIG_FAIR_GROUP_SCHED */
+static inline void update_cfs_shares(struct cfs_rq *cfs_rq)
+{
+}
+#endif /* CONFIG_FAIR_GROUP_SCHED */
 
 /* Only depends on SMP, FAIR_GROUP_SCHED may be removed when useful in lb */
 #if defined(CONFIG_SMP) && defined(CONFIG_FAIR_GROUP_SCHED)
@@ -1359,48 +1400,6 @@ static inline void dequeue_entity_load_avg(struct cfs_rq *cfs_rq,
 static inline void update_cfs_rq_blocked_load(struct cfs_rq *cfs_rq,
 					      int force_update) {}
 #endif
-
-static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
-			    unsigned long weight)
-{
-	if (se->on_rq) {
-		/* commit outstanding execution time */
-		if (cfs_rq->curr == se)
-			update_curr(cfs_rq);
-		account_entity_dequeue(cfs_rq, se);
-	}
-
-	update_load_set(&se->load, weight);
-
-	if (se->on_rq)
-		account_entity_enqueue(cfs_rq, se);
-}
-
-static inline int throttled_hierarchy(struct cfs_rq *cfs_rq);
-
-static void update_cfs_shares(struct cfs_rq *cfs_rq)
-{
-	struct task_group *tg;
-	struct sched_entity *se;
-	long shares;
-
-	tg = cfs_rq->tg;
-	se = tg->se[cpu_of(rq_of(cfs_rq))];
-	if (!se || throttled_hierarchy(cfs_rq))
-		return;
-#ifndef CONFIG_SMP
-	if (likely(se->load.weight == tg->shares))
-		return;
-#endif
-	shares = calc_cfs_shares(cfs_rq, tg);
-
-	reweight_entity(cfs_rq_of(se), se, shares);
-}
-#else /* CONFIG_FAIR_GROUP_SCHED */
-static inline void update_cfs_shares(struct cfs_rq *cfs_rq)
-{
-}
-#endif /* CONFIG_FAIR_GROUP_SCHED */
 
 static inline unsigned int task_load(struct task_struct *p)
 {
