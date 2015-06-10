@@ -92,6 +92,10 @@
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/sched.h>
+#endif
+
+const char *task_event_names[] = {"PUT_PREV_TASK", "PICK_NEXT_TASK",
+				  "TASK_WAKE", "TASK_MIGRATE", "TASK_UPDATE"};
 
 #ifdef CONFIG_ANDROID_BG_SCAN_MEM
 RAW_NOTIFIER_HEAD(bgtsk_migration_notifier_head);
@@ -1030,12 +1034,6 @@ void register_task_migration_notifier(struct notifier_block *n)
 	atomic_notifier_chain_register(&task_migration_notifier, n);
 }
 
-#define PUT_PREV_TASK  0
-#define PICK_NEXT_TASK 1
-#define TASK_WAKE      2
-#define TASK_MIGRATE   3
-#define TASK_UPDATE    4
-
 #if defined(CONFIG_SCHED_FREQ_INPUT) || defined(CONFIG_SCHED_HMP)
 
 /* Window size (in ns) */
@@ -1318,6 +1316,8 @@ static void update_task_ravg(struct task_struct *p, struct rq *rq,
 	if (event == PICK_NEXT_TASK && !p->ravg.sum)
 		rq->curr_runnable_sum += p->ravg.partial_demand;
 
+	trace_sched_update_task_ravg(p, rq, event, wallclock);
+
 	p->ravg.mark_start = wallclock;
 }
 
@@ -1587,6 +1587,9 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 
 			BUG_ON((int)src_rq->prev_runnable_sum < 0);
 			BUG_ON((int)src_rq->curr_runnable_sum < 0);
+
+			trace_sched_migration_update_sum(src_rq);
+			trace_sched_migration_update_sum(dest_rq);
 
 			if (p->state == TASK_WAKING)
 				double_rq_unlock(src_rq, dest_rq);
