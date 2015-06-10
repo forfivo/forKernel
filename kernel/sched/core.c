@@ -1759,8 +1759,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	unsigned long flags;
 	int cpu, success = 0;
 	unsigned long src_cpu;
-	int notify = 0;
-	struct migration_notify_data mnd;
+	bool notify = false;
 
 	/*
 	 * If we are going to wake up a thread waiting for CONDITION we
@@ -1826,6 +1825,7 @@ stat:
 	ttwu_stat(p, cpu, wake_flags);
 
 	if (task_notify_on_migrate(p)) {
+		struct migration_notify_data mnd;
 
 		mnd.src_cpu = src_cpu;
 		mnd.dest_cpu = cpu;
@@ -1840,16 +1840,9 @@ stat:
 		 */
 		if ((src_cpu != cpu) || (mnd.load >
 					sysctl_sched_wakeup_load_threshold))
-			notify = 1;
-	}
-
-out:
-	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-
-	if (notify)
-		atomic_notifier_call_chain(&migration_notifier_head,
+			atomic_notifier_call_chain(&migration_notifier_head,
 					   0, (void *)&mnd);
-
+	}
 	return success;
 }
 
