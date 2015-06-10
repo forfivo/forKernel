@@ -18,6 +18,8 @@
 #include <linux/suspend.h>
 #include <mach/sec_debug.h>
 
+#include <trace/events/sched.h>
+
 #include "smpboot.h"
 
 #ifdef CONFIG_SMP
