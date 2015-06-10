@@ -804,6 +804,9 @@ static void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	update_rq_clock(rq);
 	sched_info_queued(p);
 	p->sched_class->enqueue_task(rq, p, flags);
+#ifdef TRACE_CRAP
+	trace_sched_enq_deq_task(p, 1, cpumask_bits(&p->cpus_allowed)[0]);
+#endif
 	inc_cumulative_runnable_avg(rq, p);
 }
 
@@ -812,6 +815,9 @@ static void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 	update_rq_clock(rq);
 	sched_info_dequeued(p);
 	p->sched_class->dequeue_task(rq, p, flags);
+#ifdef TRACE_CRAP
+	trace_sched_enq_deq_task(p, 0, cpumask_bits(&p->cpus_allowed)[0]);
+#endif
 	dec_cumulative_runnable_avg(rq, p);
 }
 
@@ -1132,6 +1138,10 @@ update_history(struct rq *rq, struct task_struct *p, u32 runtime, int samples)
 		if (p->sched_class == &fair_sched_class)
 			inc_nr_big_small_task(rq, p);
 	}
+#ifdef TRACE_CRAP
+	trace_sched_update_history(rq, p, runtime, samples, update_sum,
+				   new_window, event);
+#endif
 }
 
 static int __init set_sched_ravg_window(char *str)
@@ -1254,6 +1264,10 @@ void update_task_ravg(struct task_struct *p, struct rq *rq,
 		}
 		mark_start = window_start;
 	} while (new_window);
+
+#ifdef TRACE_CRAP
+	trace_sched_update_task_ravg(p, rq, event, wallclock);
+#endif
 
 	p->ravg.mark_start = wallclock;
 
@@ -1433,8 +1447,9 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
 #endif
 
 #ifdef TRACE_CRAP
-	trace_sched_migrate_task(p, new_cpu);
+	trace_sched_migrate_task(p, new_cpu, pct_task_load(p));
 #endif
+
 	if (task_cpu(p) != new_cpu) {
 		struct task_migration_notifier tmn;
 
