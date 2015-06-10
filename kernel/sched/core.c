@@ -97,12 +97,11 @@
 const char *task_event_names[] = {"PUT_PREV_TASK", "PICK_NEXT_TASK",
 				  "TASK_WAKE", "TASK_MIGRATE", "TASK_UPDATE"};
 
+ATOMIC_NOTIFIER_HEAD(migration_notifier_head);
+ATOMIC_NOTIFIER_HEAD(load_alert_notifier_head);
 #ifdef CONFIG_ANDROID_BG_SCAN_MEM
 RAW_NOTIFIER_HEAD(bgtsk_migration_notifier_head);
 #endif
-
-ATOMIC_NOTIFIER_HEAD(migration_notifier_head);
-ATOMIC_NOTIFIER_HEAD(load_alert_notifier_head);
 
 void start_bandwidth_timer(struct hrtimer *period_timer, ktime_t period)
 {
@@ -1404,14 +1403,12 @@ static void update_task_ravg(struct task_struct *p, struct rq *rq,
 			p->ravg.prev_window = p->ravg.demand;
 	}
 
-#ifdef TRACE_CRAP
-	trace_sched_update_task_ravg(p, rq, event, wallclock);
-#endif
-
 	if (event == PICK_NEXT_TASK && !p->ravg.sum)
 		rq->curr_runnable_sum += p->ravg.partial_demand;
 
+#ifdef TRACE_CRAP
 	trace_sched_update_task_ravg(p, rq, event, wallclock);
+#endif
 
 	p->ravg.mark_start = wallclock;
 }
@@ -1831,8 +1828,10 @@ static void fixup_busy_time(struct task_struct *p, int new_cpu)
 	BUG_ON((int)src_rq->prev_runnable_sum < 0);
 	BUG_ON((int)src_rq->curr_runnable_sum < 0);
 
+#ifdef TRACE_CRAP
 	trace_sched_migration_update_sum(src_rq);
 	trace_sched_migration_update_sum(dest_rq);
+#endif
 
 	if (p->state == TASK_WAKING)
 		double_rq_unlock(src_rq, dest_rq);
@@ -2418,12 +2417,12 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 {
 	unsigned long flags;
 	int cpu, src_cpu, success = 0;
+	bool notify = false;
 #ifdef CONFIG_SMP
 	struct rq *rq;
 	int long_sleep = 0;
 	u64 wallclock;
 #endif
-	bool notify = false;
 
 	/*
 	 * If we are going to wake up a thread waiting for CONDITION we
@@ -2503,6 +2502,12 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 	ttwu_queue(p, cpu);
 stat:
 	ttwu_stat(p, cpu, wake_flags);
+
+out:
+
+	notify = task_notify_on_migrate(p);
+
+	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 
 	if (task_notify_on_migrate(p)) {
 		struct migration_notify_data mnd;
@@ -4565,7 +4570,8 @@ EXPORT_SYMBOL(wait_for_completion_timeout);
  */
 int __sched wait_for_completion_interruptible(struct completion *x)
 {
-	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT, TASK_INTERRUPTIBLE);
+	long t = wait_for_common(x, MAX_SCHEDULE_TIMEOUT,
+				 TASK_INTERRUPTIBLE);
 	if (t == -ERESTARTSYS)
 		return t;
 	return 0;
@@ -6467,6 +6473,7 @@ static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
 {
 	struct rq *rq_dest, *rq_src;
 	bool moved = false;
+	bool notify = false;
 	int ret = 0;
 
 	if (unlikely(!cpu_active(dest_cpu)))
@@ -6499,6 +6506,9 @@ done:
 	ret = 1;
 fail:
 	double_rq_unlock(rq_src, rq_dest);
+
+	notify = task_notify_on_migrate(p);
+
 	raw_spin_unlock(&p->pi_lock);
 	if (moved && task_notify_on_migrate(p)) {
 		struct migration_notify_data mnd;
