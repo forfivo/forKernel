@@ -1076,9 +1076,9 @@ struct load_weight {
 };
 
 struct sched_avg {
-	 /*
+	/*
 	 * These sums represent an infinite geometric series and so are bound
-	 * above by 1024/(1-y). Thus we only need a u32 to store them for for all
+	 * above by 1024/(1-y).  Thus we only need a u32 to store them for for all
 	 * choices of y < 1-2^(-32)*1024.
 	 */
 	u32 runnable_avg_sum, runnable_avg_period;
@@ -1186,7 +1186,7 @@ struct sched_entity {
  */
 #if defined(CONFIG_SMP) && defined(CONFIG_FAIR_GROUP_SCHED)
 	/* Per-entity load-tracking */
-	struct sched_avg avg;
+	struct sched_avg	avg;
 #endif
 };
 
@@ -1333,11 +1333,9 @@ struct task_struct {
 #endif
 
 	struct list_head tasks;
-
 #ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
 	struct rb_node adj_node;
 #endif
-
 #ifdef CONFIG_SMP
 	struct plist_node pushable_tasks;
 	struct rb_node pushable_dl_tasks;
@@ -1362,7 +1360,6 @@ struct task_struct {
 				 * execve */
 	unsigned in_iowait:1;
 
-
 	/* Revert to default priority/policy when forking */
 	unsigned sched_reset_on_fork:1;
 	unsigned sched_contributes_to_load:1;
@@ -1380,10 +1377,9 @@ struct task_struct {
 	/* Canary value for the -fstack-protector gcc feature */
 	unsigned long stack_canary;
 #endif
-
-	/* 
+	/*
 	 * pointers to (original) parent process, youngest child, younger sibling,
-	 * older sibling, respectively.  (p->father can be replaced with 
+	 * older sibling, respectively.  (p->father can be replaced with
 	 * p->real_parent->pid)
 	 */
 	struct task_struct __rcu *real_parent; /* real parent process */
@@ -1982,6 +1978,14 @@ sched_set_cpu_cstate(int cpu, int cstate, int wakeup_energy, int wakeup_latency)
 }
 #endif
 
+static inline void set_wake_up_idle(bool enabled)
+{
+	if (enabled)
+		current->flags |= PF_WAKE_UP_IDLE;
+	else
+		current->flags &= ~PF_WAKE_UP_IDLE;
+}
+
 #ifdef CONFIG_NO_HZ
 void calc_load_enter_idle(void);
 void calc_load_exit_idle(void);
@@ -1998,14 +2002,6 @@ static inline int sched_set_boost(int enable)
 	return -EINVAL;
 }
 #endif
-
-static inline void set_wake_up_idle(bool enabled)
-{
-	if (enabled)
-		current->flags |= PF_WAKE_UP_IDLE;
-	else
-		current->flags &= ~PF_WAKE_UP_IDLE;
-}
 
 #ifndef CONFIG_CPUMASK_OFFSTACK
 static inline int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask)
@@ -2106,7 +2102,6 @@ static inline void wake_up_idle_cpu(int cpu) { }
 #endif
 
 extern unsigned int sysctl_sched_wakeup_load_threshold;
-extern unsigned int sysctl_sched_window_stats_policy;
 
 #ifdef CONFIG_SCHED_AUTOGROUP
 extern void sched_autogroup_create_attach(struct task_struct *p);
@@ -2740,17 +2735,17 @@ static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
 
 #endif /* CONFIG_SMP */
 
-#ifdef CONFIG_ANDROID_BG_SCAN_MEM
-extern struct raw_notifier_head bgtsk_migration_notifier_head;
-#endif
-
-extern struct atomic_notifier_head load_alert_notifier_head;
 extern struct atomic_notifier_head migration_notifier_head;
 struct migration_notify_data {
 	int src_cpu;
 	int dest_cpu;
 	int load;
 };
+#ifdef CONFIG_ANDROID_BG_SCAN_MEM
+extern struct raw_notifier_head bgtsk_migration_notifier_head;
+#endif
+
+extern struct atomic_notifier_head load_alert_notifier_head;
 
 extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
 extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
