@@ -756,8 +756,6 @@ DECLARE_PER_CPU(int, sd_llc_id);
 DECLARE_PER_CPU(struct sched_domain *, sd_busy);
 DECLARE_PER_CPU(struct sched_domain *, sd_asym);
 
-extern int group_balance_cpu(struct sched_group *sg);
-
 struct sched_group_power {
 	atomic_t ref;
 	/*
