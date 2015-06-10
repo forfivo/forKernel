@@ -210,6 +210,7 @@ struct cfs_bandwidth {
 /* task group related information */
 struct task_group {
 	struct cgroup_subsys_state css;
+
 	bool notify_on_migrate;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
@@ -358,12 +359,12 @@ struct cfs_rq {
 	u64 runnable_load_avg, blocked_load_avg;
 	atomic64_t decay_counter, removed_load;
 	u64 last_decay;
-#endif	/* CONFIG_FAIR_GROUP_SCHED */
+#endif /* CONFIG_FAIR_GROUP_SCHED */
 /* These always depend on CONFIG_FAIR_GROUP_SCHED */
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	u64 tg_load_contrib;
 	u32 tg_runnable_contrib;
-#endif	/* CONFIG_FAIR_GROUP_SCHED */
+#endif /* CONFIG_FAIR_GROUP_SCHED */
 
 	/*
 	 * h_load = weight * f(tg)
@@ -926,7 +927,7 @@ static inline struct task_group *task_group(struct task_struct *p)
 
 static inline bool task_notify_on_migrate(struct task_struct *p)
 {
-        return task_group(p)->notify_on_migrate;
+	return task_group(p)->notify_on_migrate;
 }
 
 /* Change a task's cfs_rq and parent entity if it moves across CPUs/groups */
@@ -954,12 +955,10 @@ static inline struct task_group *task_group(struct task_struct *p)
 {
 	return NULL;
 }
-
 static inline bool task_notify_on_migrate(struct task_struct *p)
 {
-return false;
+	return false;
 }
-
 #endif /* CONFIG_CGROUP_SCHED */
 
 static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)

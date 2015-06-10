@@ -1842,6 +1842,7 @@ stat:
 			atomic_notifier_call_chain(&migration_notifier_head,
 					   0, (void *)&mnd);
 	}
+
 	return success;
 }
 
@@ -1934,7 +1935,6 @@ static void __sched_fork(struct task_struct *p)
 #if defined(CONFIG_SMP) && defined(CONFIG_FAIR_GROUP_SCHED)
 	init_new_task_load(p);
 #endif
-
 #ifdef CONFIG_SCHEDSTATS
 	memset(&p->se.statistics, 0, sizeof(p->se.statistics));
 #endif
@@ -8729,7 +8729,7 @@ cpu_cgroup_exit(struct cgroup *cgrp, struct cgroup *old_cgrp,
 }
 
 static u64 cpu_notify_on_migrate_read_u64(struct cgroup *cgrp,
-					struct cftype *cft)
+					  struct cftype *cft)
 {
 	struct task_group *tg = cgroup_tg(cgrp);
 
@@ -8737,7 +8737,7 @@ static u64 cpu_notify_on_migrate_read_u64(struct cgroup *cgrp,
 }
 
 static int cpu_notify_on_migrate_write_u64(struct cgroup *cgrp,
-					struct cftype *cft, u64 notify)
+					   struct cftype *cft, u64 notify)
 {
 	struct task_group *tg = cgroup_tg(cgrp);
 
@@ -9064,7 +9064,7 @@ static struct cftype cpu_files[] = {
 		.write_u64 = cpu_rt_period_write_uint,
 	},
 #endif
-	{ }    /* terminate */
+	{ }	/* terminate */
 };
 
 static int cpu_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)

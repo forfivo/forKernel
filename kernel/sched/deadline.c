@@ -1093,7 +1093,6 @@ static int pick_dl_task(struct rq *rq, struct task_struct *p, int cpu)
 	    (cpu < 0 || cpumask_test_cpu(cpu, &p->cpus_allowed)) &&
 	    (p->dl.nr_cpus_allowed > 1))
 		return 1;
-
 	return 0;
 }
 
