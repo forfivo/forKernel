@@ -1985,6 +1985,15 @@ static inline void calc_load_enter_idle(void) { }
 static inline void calc_load_exit_idle(void) { }
 #endif /* CONFIG_NO_HZ */
 
+#ifdef CONFIG_SCHED_HMP
+extern int sched_set_boost(int enable);
+#else
+static inline int sched_set_boost(int enable)
+{
+	return -EINVAL;
+}
+#endif
+
 static inline void set_wake_up_idle(bool enabled)
 {
 	if (enabled)
