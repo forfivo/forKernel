@@ -42,16 +42,15 @@ static u32 notrace jiffy_sched_clock_read(void)
 
 static u32 __read_mostly (*read_sched_clock)(void) = jiffy_sched_clock_read;
 
-static inline u64 cyc_to_ns(u64 cyc, u32 mult, u32 shift)
+static inline u64 notrace cyc_to_ns(u64 cyc, u32 mult, u32 shift)
 {
 	return (cyc * mult) >> shift;
 }
 
-unsigned long long notrace sched_clock(void)
+static unsigned long long notrace cyc_to_sched_clock(u32 cyc, u32 mask)
 {
 	u64 epoch_ns;
 	u32 epoch_cyc;
-	u32 cyc;
 
 	if (cd.suspended)
 		return cd.epoch_ns;
@@ -158,6 +157,19 @@ void __init setup_sched_clock(u32 (*read)(void), int bits, unsigned long rate)
 	cd.epoch_ns = 0;
 
 	pr_debug("Registered %pF as sched_clock source\n", read);
+}
+
+static unsigned long long notrace sched_clock_32(void)
+{
+	u32 cyc = read_sched_clock();
+	return cyc_to_sched_clock(cyc, sched_clock_mask);
+}
+
+unsigned long long __read_mostly (*sched_clock_func)(void) = sched_clock_32;
+
+unsigned long long notrace sched_clock(void)
+{
+	return sched_clock_func();
 }
 
 void __init sched_clock_postinit(void)
