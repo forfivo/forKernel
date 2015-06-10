@@ -181,11 +181,11 @@ static int kthread(void *_create)
 	schedule();
 
 	ret = -EINTR;
+
 	if (!test_bit(KTHREAD_SHOULD_STOP, &self.flags)) {
 		__kthread_parkme(&self);
 		ret = threadfn(data);
 	}
-
 	/* we can't just return, we must preserve "self" on stack */
 	do_exit(ret);
 }
@@ -451,6 +451,8 @@ int kthread_stop(struct task_struct *k)
 {
 	struct kthread *kthread = task_get_live_kthread(k);
 	int ret;
+
+	trace_sched_kthread_stop(k);
 
 	if (kthread) {
 		set_bit(KTHREAD_SHOULD_STOP, &kthread->flags);
