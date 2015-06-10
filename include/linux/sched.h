@@ -2722,6 +2722,7 @@ static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
 extern struct raw_notifier_head bgtsk_migration_notifier_head;
 #endif
 
+extern struct atomic_notifier_head load_alert_notifier_head;
 extern struct atomic_notifier_head migration_notifier_head;
 struct migration_notify_data {
 	int src_cpu;
