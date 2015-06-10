@@ -31,6 +31,7 @@
 #include <linux/perf_event.h>
 #include <linux/audit.h>
 #include <linux/khugepaged.h>
+#include <linux/sched/sysctl.h>
 #include <linux/ksm.h>
 
 #include <asm/uaccess.h>
