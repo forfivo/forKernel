@@ -15,6 +15,7 @@
 #include <linux/sched.h>
 #include <linux/sched/deadline.h>
 #include <linux/timer.h>
+#include <linux/sched/rt.h>
 
 #include "rtmutex_common.h"
 

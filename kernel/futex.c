@@ -64,6 +64,7 @@
 #include <linux/freezer.h>
 #include <linux/bootmem.h>
 #include <linux/freezer.h>
+#include <linux/sched/rt.h>
 
 #include <asm/futex.h>
 

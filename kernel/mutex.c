@@ -23,6 +23,7 @@
 #include <linux/spinlock.h>
 #include <linux/interrupt.h>
 #include <linux/debug_locks.h>
+#include <linux/sched/rt.h>
 
 /*
  * In the DEBUG case we are using the "NULL fastpath" for mutexes,
