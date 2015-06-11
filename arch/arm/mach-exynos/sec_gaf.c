@@ -8,6 +8,7 @@
 #include <linux/sched.h>
 #include <linux/fs.h>
 #include <linux/mount.h>
+#include <linux/sched/rt.h>
 #include <asm/pgtable.h>
 
 static struct GAForensicINFO {

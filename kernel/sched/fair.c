@@ -2506,7 +2506,9 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 	}
 
 	/* ensure we never gain time by being placed backwards. */
-	se->vruntime = max_vruntime(se->vruntime, vruntime);
+	vruntime = max_vruntime(se->vruntime, vruntime);
+
+	se->vruntime = vruntime;
 }
 
 static void check_enqueue_throttle(struct cfs_rq *cfs_rq);
@@ -3595,7 +3597,7 @@ static inline void unthrottle_offline_cfs_rqs(struct rq *rq) {}
 static void hrtick_start_fair(struct rq *rq, struct task_struct *p)
 {
 	struct sched_entity *se = &p->se;
-	struct cfs_rq *cfs_rq = &rq->cfs;
+	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
 	WARN_ON(task_rq(p) != rq);
 
@@ -4487,7 +4489,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	 * Batch and idle tasks do not preempt non-idle tasks (their preemption
 	 * is driven by the tick):
 	 */
-	if (unlikely(p->policy != SCHED_NORMAL) || !sched_feat(WAKEUP_PREEMPTION))
+	if (unlikely(p->policy != SCHED_NORMAL))
 		return;
 
 	find_matching_se(&se, &pse);
@@ -4621,122 +4623,8 @@ static bool yield_to_task_fair(struct rq *rq, struct task_struct *p, bool preemp
 
 #ifdef CONFIG_SMP
 /**************************************************
- * Fair scheduling class load-balancing methods.
- *
- * BASICS
- *
- * The purpose of load-balancing is to achieve the same basic fairness the
- * per-cpu scheduler provides, namely provide a proportional amount of compute
- * time to each task. This is expressed in the following equation:
- *
- *   W_i,n/P_i == W_j,n/P_j for all i,j                               (1)
- *
- * Where W_i,n is the n-th weight average for cpu i. The instantaneous weight
- * W_i,0 is defined as:
- *
- *   W_i,0 = \Sum_j w_i,j                                             (2)
- *
- * Where w_i,j is the weight of the j-th runnable task on cpu i. This weight
- * is derived from the nice value as per prio_to_weight[].
- *
- * The weight average is an exponential decay average of the instantaneous
- * weight:
- *
- *   W'_i,n = (2^n - 1) / 2^n * W_i,n + 1 / 2^n * W_i,0               (3)
- *
- * P_i is the cpu power (or compute capacity) of cpu i, typically it is the
- * fraction of 'recent' time available for SCHED_OTHER task execution. But it
- * can also include other factors [XXX].
- *
- * To achieve this balance we define a measure of imbalance which follows
- * directly from (1):
- *
- *   imb_i,j = max{ avg(W/P), W_i/P_i } - min{ avg(W/P), W_j/P_j }    (4)
- *
- * We them move tasks around to minimize the imbalance. In the continuous
- * function space it is obvious this converges, in the discrete case we get
- * a few fun cases generally called infeasible weight scenarios.
- *
- * [XXX expand on:
- *     - infeasible weights;
- *     - local vs global optima in the discrete case. ]
- *
- *
- * SCHED DOMAINS
- *
- * In order to solve the imbalance equation (4), and avoid the obvious O(n^2)
- * for all i,j solution, we create a tree of cpus that follows the hardware
- * topology where each level pairs two lower groups (or better). This results
- * in O(log n) layers. Furthermore we reduce the number of cpus going up the
- * tree to only the first of the previous level and we decrease the frequency
- * of load-balance at each level inv. proportional to the number of cpus in
- * the groups.
- *
- * This yields:
- *
- *     log_2 n     1     n
- *   \Sum       { --- * --- * 2^i } = O(n)                            (5)
- *     i = 0      2^i   2^i
- *                               `- size of each group
- *         |         |     `- number of cpus doing load-balance
- *         |         `- freq
- *         `- sum over all levels
- *
- * Coupled with a limit on how many tasks we can migrate every balance pass,
- * this makes (5) the runtime complexity of the balancer.
- *
- * An important property here is that each CPU is still (indirectly) connected
- * to every other cpu in at most O(log n) steps:
- *
- * The adjacency matrix of the resulting graph is given by:
- *
- *             log_2 n     
- *   A_i,j = \Union     (i % 2^k == 0) && i / 2^(k+1) == j / 2^(k+1)  (6)
- *             k = 0
- *
- * And you'll find that:
- *
- *   A^(log_2 n)_i,j != 0  for all i,j                                (7)
- *
- * Showing there's indeed a path between every cpu in at most O(log n) steps.
- * The task movement gives a factor of O(m), giving a convergence complexity
- * of:
- *
- *   O(nm log n),  n := nr_cpus, m := nr_tasks                        (8)
- *
- *
- * WORK CONSERVING
- *
- * In order to avoid CPUs going idle while there's still work to do, new idle
- * balancing is more aggressive and has the newly idle cpu iterate up the domain
- * tree itself instead of relying on other CPUs to bring it work.
- *
- * This adds some complexity to both (5) and (8) but it reduces the total idle
- * time.
- *
- * [XXX more?]
- *
- *
- * CGROUPS
- *
- * Cgroups make a horror show out of (2), instead of a simple sum we get:
- *
- *                                s_k,i
- *   W_i,0 = \Sum_j \Prod_k w_k * -----                               (9)
- *                                 S_k
- *
- * Where
- *
- *   s_k,i = \Sum_j w_i,j,k  and  S_k = \Sum_i s_k,i                 (10)
- *
- * w_i,j,k is the weight of the j-th runnable task in the k-th cgroup on cpu i.
- *
- * The big problem is S_k, its a global sum needed to compute a local (W_i)
- * property.
- *
- * [XXX write more on how we solve this.. _after_ merging pjt's patches that
- *      rewrite all of this once again.]
- */ 
+ * Fair scheduling class load-balancing methods:
+ */
 
 static unsigned long __read_mostly max_load_balance_interval = HZ/10;
 
@@ -4749,8 +4637,8 @@ static unsigned long __read_mostly max_load_balance_interval = HZ/10;
 struct lb_env {
 	struct sched_domain	*sd;
 
-	struct rq		*src_rq;
 	int			src_cpu;
+	struct rq		*src_rq;
 
 	int			dst_cpu;
 	struct rq		*dst_rq;
@@ -4760,7 +4648,8 @@ struct lb_env {
 	enum cpu_idle_type	idle;
 	long			imbalance;
 	/* The set of CPUs under consideration for load-balancing */
-	struct			cpumask *cpus;
+	struct cpumask		*cpus;
+
 	unsigned int		flags;
 
 	unsigned int		loop;
@@ -4843,7 +4732,7 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 		return 0;
 
 	if (!cpumask_test_cpu(env->dst_cpu, tsk_cpus_allowed(p))) {
-		int cpu;
+		int new_dst_cpu;
 
 		schedstat_inc(p, se.statistics.nr_failed_migrations_affine);
 
@@ -4858,15 +4747,12 @@ int can_migrate_task(struct task_struct *p, struct lb_env *env)
 		if (!env->dst_grpmask || (env->flags & LBF_SOME_PINNED))
 			return 0;
 
-		/* Prevent to re-select dst_cpu via env's cpus */
-		for_each_cpu_and(cpu, env->dst_grpmask, env->cpus) {
-			if (cpumask_test_cpu(cpu, tsk_cpus_allowed(p))) {
-				env->flags |= LBF_SOME_PINNED;
-				env->new_dst_cpu = cpu;
-				break;
-			}
+		new_dst_cpu = cpumask_first_and(env->dst_grpmask,
+						tsk_cpus_allowed(p));
+		if (new_dst_cpu < nr_cpu_ids) {
+			env->flags |= LBF_SOME_PINNED;
+			env->new_dst_cpu = new_dst_cpu;
 		}
-
 		return 0;
 	}
 
@@ -5372,28 +5258,13 @@ void update_group_power(struct sched_domain *sd, int cpu)
 
 	power = 0;
 
-	if (child->flags & SD_OVERLAP) {
-		/*
-		 * SD_OVERLAP domains cannot assume that child groups
-		 * span the current group.
-		 */
+	group = child->groups;
+	do {
+		power += group->sgp->power;
+		group = group->next;
+	} while (group != child->groups);
 
-		for_each_cpu(cpu, sched_group_cpus(sdg))
-			power += power_of(cpu);
-	} else  {
-		/*
-		 * !SD_OVERLAP domains can assume that child groups
-		 * span the current group.
-		 */ 
-
-		group = child->groups;
-		do {
-			power += group->sgp->power;
-			group = group->next;
-		} while (group != child->groups);
-	}
-
-	sdg->sgp->power_orig = sdg->sgp->power = power;
+	sdg->sgp->power = power;
 }
 
 /*
@@ -5436,7 +5307,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 			bool *overload)
 {
 	unsigned long nr_running, max_nr_running, min_nr_running;
-	unsigned long scaled_load, load, max_cpu_load, min_cpu_load, max_nr_running;
+	unsigned long scaled_load, load, max_cpu_load, min_cpu_load;
 	unsigned int balance_cpu = -1;
 	unsigned long balance_load = ~0UL;
 	unsigned long avg_load_per_task = 0;
@@ -6114,6 +5985,7 @@ static int load_balance(int this_cpu, struct rq *this_rq,
 			int *balance)
 {
 	int ld_moved, cur_ld_moved, active_balance = 0;
+	int lb_iterations, max_lb_iterations;
 	struct sched_group *group;
 	struct rq *busiest = NULL;
 	unsigned long flags;
@@ -6129,14 +6001,8 @@ static int load_balance(int this_cpu, struct rq *this_rq,
 		.cpus		= cpus,
 	};
 
-	/*
-	 * For NEWLY_IDLE load_balancing, we don't need to consider
-	 * other cpus in our group
-	 */
-	if (idle == CPU_NEWLY_IDLE)
-		env.dst_grpmask = NULL;
-
 	cpumask_copy(cpus, cpu_active_mask);
+	max_lb_iterations = cpumask_weight(env.dst_grpmask);
 
 	per_cpu(dbs_boost_load_moved, this_cpu) = 0;
 	schedstat_inc(sd, lb_count[idle]);
@@ -6158,11 +6024,12 @@ redo:
 		goto out_balanced;
 	}
 
-	BUG_ON(busiest == env.dst_rq);
+	BUG_ON(busiest == this_rq);
 
 	schedstat_add(sd, lb_imbalance[idle], env.imbalance);
 
 	ld_moved = 0;
+	lb_iterations = 1;
 	/* load balance only apply to CFS task, we use h_nr_running here */
 	if (busiest->cfs.h_nr_running > 1) {
 		/*
@@ -6180,7 +6047,7 @@ redo:
 		update_h_load(env.src_cpu);
 more_balance:
 		local_irq_save(flags);
-		double_rq_lock(env.dst_rq, busiest);
+		double_rq_lock(this_rq, busiest);
 
 		/*
 		 * cur_ld_moved - load moved in current iteration
@@ -6188,7 +6055,7 @@ more_balance:
 		 */
 		cur_ld_moved = move_tasks(&env);
 		ld_moved += cur_ld_moved;
-		double_rq_unlock(env.dst_rq, busiest);
+		double_rq_unlock(this_rq, busiest);
 		local_irq_restore(flags);
 
 		/*
@@ -6196,11 +6063,6 @@ more_balance:
 		 */
 		if (cur_ld_moved && env.dst_cpu != smp_processor_id())
 			resched_cpu(env.dst_cpu);
-
-		if (env.flags & LBF_NEED_BREAK) {
-			env.flags &= ~LBF_NEED_BREAK;
-			goto more_balance;
-		}
 
 		/*
 		 * Revisit (affine) tasks on src_cpu that couldn't be moved to
@@ -6221,21 +6083,24 @@ more_balance:
 		 * moreover subsequent load balance cycles should correct the
 		 * excess load moved.
 		 */
-		if ((env.flags & LBF_SOME_PINNED) && env.imbalance > 0) {
+		if ((env.flags & LBF_SOME_PINNED) && env.imbalance > 0 &&
+				lb_iterations++ < max_lb_iterations) {
 
-			env.dst_rq	 = cpu_rq(env.new_dst_cpu);
+			this_rq		 = cpu_rq(env.new_dst_cpu);
+			env.dst_rq	 = this_rq;
 			env.dst_cpu	 = env.new_dst_cpu;
 			env.flags	&= ~LBF_SOME_PINNED;
 			env.loop	 = 0;
 			env.loop_break	 = sched_nr_migrate_break;
-
-			/* Prevent to re-select dst_cpu via env's cpus */
-			cpumask_clear_cpu(env.dst_cpu, env.cpus);
-
 			/*
 			 * Go back to "more_balance" rather than "redo" since we
 			 * need to continue with same src_cpu.
 			 */
+			goto more_balance;
+		}
+
+		if (env.flags & LBF_NEED_BREAK) {
+			env.flags &= ~LBF_NEED_BREAK;
 			goto more_balance;
 		}
 
@@ -6353,7 +6218,7 @@ out_one_pinned:
 out:
 	trace_sched_load_balance(this_cpu, idle, *balance,
 				 group ? group->cpumask[0] : 0,
-				 busiest ? busiest->nr_running : 0, imbalance,
+				 busiest ? busiest->nr_running : 0, env.imbalance,
 				 env.flags, ld_moved, sd->balance_interval);
 	return ld_moved;
 }
@@ -6428,10 +6293,10 @@ void idle_balance(int this_cpu, struct rq *this_rq)
 
 			/* If we've pulled tasks over stop searching: */
 			pulled_task = load_balance(balance_cpu, balance_rq,
-						   sd,
-						   (this_cpu == balance_cpu ?
-						    CPU_NEWLY_IDLE :
-						    CPU_IDLE), &balance);
+						  sd,
+						  (this_cpu == balance_cpu ?
+						   CPU_NEWLY_IDLE :
+						   CPU_IDLE), &balance);
 
 			domain_cost = sched_clock_cpu(smp_processor_id()) - t0;
 

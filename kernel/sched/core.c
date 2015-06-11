@@ -1333,7 +1333,7 @@ static void update_task_ravg(struct task_struct *p, struct rq *rq,
 	u64 mark_start = p->ravg.mark_start;
 	u64 window_start;
 
-	if (sched_use_pelt || !rq->window_start)
+	if (is_idle_task(p) || sched_use_pelt || !rq->window_start)
 		return;
 
 	lockdep_assert_held(&rq->lock);
@@ -4218,69 +4218,6 @@ void __sched schedule_preempt_disabled(void)
 	preempt_disable();
 }
 
-#ifdef CONFIG_MUTEX_SPIN_ON_OWNER
-
-static inline bool owner_running(struct mutex *lock, struct task_struct *owner)
-{
-	if (lock->owner != owner)
-		return false;
-
-	/*
-	 * Ensure we emit the owner->on_cpu, dereference _after_ checking
-	 * lock->owner still matches owner, if that fails, owner might
-	 * point to free()d memory, if it still matches, the rcu_read_lock()
-	 * ensures the memory stays valid.
-	 */
-	barrier();
-
-	return owner->on_cpu;
-}
-
-/*
- * Look out! "owner" is an entirely speculative pointer
- * access and not reliable.
- */
-int mutex_spin_on_owner(struct mutex *lock, struct task_struct *owner)
-{
-	rcu_read_lock();
-	while (owner_running(lock, owner)) {
-		if (need_resched())
-			break;
-
-		arch_mutex_cpu_relax();
-	}
-	rcu_read_unlock();
-
-	/*
-	 * We break out the loop above on need_resched() and when the
-	 * owner changed, which is a sign for heavy contention. Return
-	 * success only when lock->owner is NULL.
-	 */
-	return lock->owner == NULL;
-}
-
-/*
- * Initial check for entering the mutex spinning loop
- */
-int mutex_can_spin_on_owner(struct mutex *lock)
-{
-	int retval = 1;
-
-	if (!sched_feat(OWNER_SPIN))
-		return 0;
-
-	rcu_read_lock();
-	if (lock->owner)
-		retval = lock->owner->on_cpu;
-	rcu_read_unlock();
-	/*
-	 * if lock->owner is not set, the mutex owner may have just acquired
-	 * it and not set the owner yet or the mutex has been released.
-	 */
-	return retval;
-}
-#endif
-
 #ifdef CONFIG_PREEMPT
 /*
  * this is the entry point to schedule() from in-kernel preemption
@@ -7038,12 +6975,7 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
 			break;
 		}
 
-		/*
-		 * Even though we initialize ->power to something semi-sane,
-		 * we leave power_orig unset. This allows us to detect if
-		 * domain iteration is still funny without causing /0 traps.
-		 */
-		if (!group->sgp->power_orig) {
+		if (!group->sgp->power) {
 			printk(KERN_CONT "\n");
 			printk(KERN_ERR "ERROR: domain->cpu_power not "
 					"set\n");
@@ -7593,20 +7525,11 @@ build_overlap_sched_groups(struct sched_domain *sd, int cpu)
 
 		cpumask_or(covered, covered, sg_span);
 
-		sg->sgp = *per_cpu_ptr(sdd->sgp, i);
+		sg->sgp = *per_cpu_ptr(sdd->sgp, cpumask_first(sg_span));
 		atomic_inc(&sg->sgp->ref);
 		sg->balance_cpu = -1;
 
-		/*
-		 * Initialize sgp->power such that even if we mess up the
-		 * domains and no possible iteration will get us here, we won't
-		 * die on a /0 trap.
-		 */
-		sg->sgp->power = SCHED_POWER_SCALE * cpumask_weight(sg_span);
-
-		if ((!groups && cpumask_test_cpu(cpu, sg_span)) ||
-			       cpumask_first(sg_span) == cpu) {
-			WARN_ON_ONCE(!cpumask_test_cpu(cpu, sg_span));
+		if (cpumask_test_cpu(cpu, sg_span))
 			groups = sg;
 
 		if (!first)
@@ -8377,8 +8300,6 @@ void __init sched_init(void)
 {
 	int i, j;
 	unsigned long alloc_size = 0, ptr;
-	sec_gaf_supply_rqinfo(offsetof(struct rq, curr),
-			      offsetof(struct cfs_rq, rq));
 
 #ifdef CONFIG_SCHED_HMP
 	if (num_possible_cpus() > 4)
