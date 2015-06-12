@@ -986,7 +986,7 @@ static void do_dbs_timer(struct work_struct *work)
 			dbs_info->freq_lo, CPUFREQ_RELATION_H);
 		delay = dbs_info->freq_lo_jiffies;
 	}
-	queue_delayed_work_on(cpu, ondemand_wq, &dbs_info->work, delay);
+	mod_delayed_work_on(cpu, ondemand_wq, &dbs_info->work, delay);
 	mutex_unlock(&dbs_info->timer_mutex);
 }
 
@@ -1007,7 +1007,7 @@ static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
 		delay = msecs_to_jiffies(40 * 1000);
 	}
 
-	queue_delayed_work_on(dbs_info->cpu, ondemand_wq, &dbs_info->work, delay);
+	mod_delayed_work_on(dbs_info->cpu, ondemand_wq, &dbs_info->work, delay);
 }
 
 static inline void dbs_timer_exit(struct cpu_dbs_info_s *dbs_info)
