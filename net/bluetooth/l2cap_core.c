@@ -2692,6 +2692,11 @@ static int l2cap_connect_req(struct l2cap_conn *conn,
 		BT_DBG("backlog full %d", parent->sk_ack_backlog);
 		goto response;
 	}
+	/* Check for backlog size */
+	if (sk_acceptq_is_full(parent)) {
+		BT_DBG("backlog full %d", parent->sk_ack_backlog);
+		goto response;
+	}
 
 	chan = pchan->ops->new_connection(pchan->data);
 	if (!chan)
