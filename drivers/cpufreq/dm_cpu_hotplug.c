@@ -43,6 +43,7 @@ static int cpu_util[NR_CPUS];
 static struct pm_qos_request max_cpu_qos_hotplug;
 static unsigned int cur_load_freq = 0;
 static bool lcd_is_on;
+static bool io_is_busy;
 
 enum hotplug_mode {
 	CHP_NORMAL,
@@ -59,50 +60,6 @@ module_param(screen_on_hotplug, int, 0660);
 
 int hotplug_freq = NORMALMIN_FREQ;
 module_param(hotplug_freq, int, 0660);
-
-static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
-{
-	u64 idle_time;
-	u64 cur_wall_time;
-	u64 busy_time;
-
-	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
-
-	busy_time  = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_IRQ];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
-
-	idle_time = cur_wall_time - busy_time;
-	if (wall)
-		*wall = jiffies_to_usecs(cur_wall_time);
-
-	return jiffies_to_usecs(idle_time);
-}
-
-static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
-{
-	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
-
-	if (idle_time == -1ULL)
-		return get_cpu_idle_time_jiffy(cpu, wall);
-	else
-		idle_time += get_cpu_iowait_time_us(cpu, wall);
-
-	return idle_time;
-}
-
-static inline cputime64_t get_cpu_iowait_time(unsigned int cpu, cputime64_t *wall)
-{
-	u64 iowait_time = get_cpu_iowait_time_us(cpu, wall);
-
-	if (iowait_time == -1ULL)
-		return 0;
-
-	return iowait_time;
-}
 
 static inline void pm_qos_update_max(int frequency)
 {
@@ -268,14 +225,13 @@ static void calc_load(void)
 
 	for_each_cpu(i, policy->cpus) {
 		struct cpu_load_info	*i_load_info;
-		cputime64_t cur_wall_time, cur_idle_time, cur_iowait_time;
+		cputime64_t cur_wall_time, cur_idle_time;
 		unsigned int idle_time, wall_time, iowait_time;
 		unsigned int load, load_freq;
 
 		i_load_info = &per_cpu(cur_cpu_info, i);
 
-		cur_idle_time = get_cpu_idle_time(i, &cur_wall_time);
-		cur_iowait_time = get_cpu_iowait_time(i, &cur_wall_time);
+		cur_idle_time = get_cpu_idle_time(i, &cur_wall_time, io_is_busy);
 
 		wall_time = (unsigned int)
 			(cur_wall_time - i_load_info->cpu_wall);
@@ -284,10 +240,6 @@ static void calc_load(void)
 		idle_time = (unsigned int)
 			(cur_idle_time - i_load_info->cpu_idle);
 		i_load_info->cpu_idle = cur_idle_time;
-
-		iowait_time = (unsigned int)
-			(cur_iowait_time - i_load_info->cpu_iowait);
-		i_load_info->cpu_iowait = cur_iowait_time;
 
 		if (unlikely(!wall_time || wall_time < idle_time))
 			continue;
