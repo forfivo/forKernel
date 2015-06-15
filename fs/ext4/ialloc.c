@@ -703,7 +703,7 @@ got_group:
 			ext4_debug("ext4_get_group_desc error: %d\n", group);
 			print_bh(sb, group_desc_bh, 0, EXT4_BLOCK_SIZE(sb));
 			goto fail;
-
+		}
 		/*
 		 * Check free inodes count before loading bitmap.
 		 */
@@ -811,6 +811,10 @@ got:
 		}
 	}
 
+	BUFFER_TRACE(group_desc_bh, "get_write_access");
+	err = ext4_journal_get_write_access(handle, group_desc_bh);
+	if (err)
+		goto fail;
 
 	/* Update the relevant bg descriptor fields */
 	if (ext4_has_group_desc_csum(sb)) {

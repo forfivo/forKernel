@@ -172,11 +172,11 @@ static void scfs_evict_inode(struct inode *inode)
 	struct scfs_inode_info *sii = SCFS_I(inode);
 
 	truncate_inode_pages(&inode->i_data, 0);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0)
+//#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0)
 	clear_inode(inode);
-#else
-	end_writeback(inode);
-#endif
+//#else
+//	clear_inode(inode);
+//#endif
 	/* to conserve memory, evicted inode will throw out the cluster info */
 	if (sii->cinfo_array) {
 		scfs_cinfo_free(sii, sii->cinfo_array);
@@ -389,11 +389,11 @@ static struct dentry *scfs_mount(struct file_system_type *fs_type, int flags,
 	if (!sbi->options.comp_type)
 		sbi->options.comp_type = SCFS_COMP_LZO;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0)
+//#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0)
 	sb = sget(fs_type, NULL, set_anon_super, flags, NULL);
-#else
-	sb = sget(fs_type, NULL, set_anon_super, NULL);
-#endif
+//#else
+//	sb = sget(fs_type, NULL, set_anon_super, NULL);
+//#endif
 	if (IS_ERR(sb)) {
 		goto out_free;
 	}
@@ -593,32 +593,20 @@ out:
 	return ret;
 }
 #else
-static int scfs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
+static int scfs_d_revalidate(struct dentry *dentry, unsigned int flags)
 {
 	struct dentry *lower_dentry;
 	struct vfsmount *lower_mnt;
-	struct dentry *dentry_save = NULL;
-	struct vfsmount *vfsmount_save = NULL;
 	int ret = 1;
 
-	if (nd && nd->flags & LOOKUP_RCU)
+	if (flags & LOOKUP_RCU)
 		return -ECHILD;
 
 	lower_dentry = scfs_lower_dentry(dentry);
 	lower_mnt = scfs_dentry_to_lower_mnt(dentry);
 	if (!lower_dentry->d_op || !lower_dentry->d_op->d_revalidate)
 		goto out;
-	if (nd) {
-		dentry_save = nd->path.dentry;
-		vfsmount_save = nd->path.mnt;
-		nd->path.dentry = lower_dentry;
-		nd->path.mnt = lower_mnt;
-	}
-	ret = lower_dentry->d_op->d_revalidate(lower_dentry, nd);
-	if (nd) {
-		nd->path.dentry = dentry_save;
-		nd->path.mnt = vfsmount_save;
-	}
+	ret = lower_dentry->d_op->d_revalidate(lower_dentry, flags);
 	if (dentry->d_inode) {
 		struct inode *lower_inode =
 			scfs_lower_inode(dentry->d_inode);

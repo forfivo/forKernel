@@ -1877,9 +1877,9 @@ static int do_new_mount(struct path *path, const char *type, int flags,
 #ifdef CONFIG_ASYNC_FSYNC
 	if (!err && ((!strcmp(type, "ext4") &&
 	    !strcmp(path->dentry->d_name.name, "data")) ||
-	   (!strcmp(type, "fuse") &&
+	    (!strcmp(type, "fuse") &&
 	    !strcmp(path->dentry->d_name.name, "emulated"))))
-		mnt->mnt_sb->fsync_flags |= FLAG_ASYNC_FSYNC;
+                mnt->mnt_sb->fsync_flags |= FLAG_ASYNC_FSYNC;
 #endif
 	return err;
 }
@@ -2175,9 +2175,9 @@ long do_mount(const char *dev_name, const char *dir_name,
 		mnt_flags |= MNT_NODEV;
 	if (flags & MS_NOEXEC)
 		mnt_flags |= MNT_NOEXEC;
-//	if (flags & MS_NOATIME)
+	/* if (flags & MS_NOATIME) */
 		mnt_flags |= MNT_NOATIME;
-//	if (flags & MS_NODIRATIME)
+	/* if (flags & MS_NODIRATIME) */
 		mnt_flags |= MNT_NODIRATIME;
 	if (flags & MS_STRICTATIME)
 		mnt_flags &= ~(MNT_RELATIME | MNT_NOATIME);
@@ -2374,9 +2374,9 @@ SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 		char __user *, type, unsigned long, flags, void __user *, data)
 {
 	int ret;
-	char *kernel_type;
-	char *kernel_dir;
-	char *kernel_dev;
+	char *kernel_type = NULL;
+	char *kernel_dir = NULL;
+	char *kernel_dev = NULL;
 	unsigned long data_page;
 
 	ret = copy_mount_string(type, &kernel_type);

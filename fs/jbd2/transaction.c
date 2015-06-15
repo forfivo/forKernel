@@ -30,6 +30,8 @@
 #include <linux/bug.h>
 #include <linux/module.h>
 
+#include <trace/events/jbd2.h>
+
 static void __jbd2_journal_temp_unlink_buffer(struct journal_head *jh);
 static void __jbd2_journal_unfile_buffer(struct journal_head *jh);
 
@@ -100,8 +102,6 @@ jbd2_get_transaction(journal_t *journal, transaction_t *transaction)
 	journal->j_running_transaction = transaction;
 	transaction->t_max_wait = 0;
 	transaction->t_start = jiffies;
-	transaction->t_callbacked = 0;
-	transaction->t_dropped = 0;
 
 	return transaction;
 }
@@ -308,6 +308,8 @@ repeat:
 	 */
 	update_t_max_wait(transaction, ts);
 	handle->h_transaction = transaction;
+	handle->h_requested_credits = nblocks;
+	handle->h_start_jiffies = jiffies;
 	atomic_inc(&transaction->t_updates);
 	atomic_inc(&transaction->t_handle_count);
 	jbd_debug(4, "Handle %p given %d credits (total %d, free %d)\n",
@@ -354,7 +356,8 @@ static handle_t *new_handle(int nblocks)
  * Return a pointer to a newly allocated handle, or an ERR_PTR() value
  * on failure.
  */
-handle_t *jbd2__journal_start(journal_t *journal, int nblocks, gfp_t gfp_mask)
+handle_t *jbd2__journal_start(journal_t *journal, int nblocks, gfp_t gfp_mask,
+			      unsigned int type, unsigned int line_no)
 {
 	handle_t *handle = journal_current_handle();
 	int err;
@@ -380,6 +383,11 @@ handle_t *jbd2__journal_start(journal_t *journal, int nblocks, gfp_t gfp_mask)
 		current->journal_info = NULL;
 		handle = ERR_PTR(err);
 	}
+	handle->h_type = type;
+	handle->h_line_no = line_no;
+	trace_jbd2_handle_start(journal->j_fs_dev->bd_dev,
+				handle->h_transaction->t_tid, type,
+				line_no, nblocks);
 	return handle;
 }
 EXPORT_SYMBOL(jbd2__journal_start);
@@ -387,7 +395,7 @@ EXPORT_SYMBOL(jbd2__journal_start);
 
 handle_t *jbd2_journal_start(journal_t *journal, int nblocks)
 {
-	return jbd2__journal_start(journal, nblocks, GFP_NOFS);
+	return jbd2__journal_start(journal, nblocks, GFP_NOFS, 0, 0);
 }
 EXPORT_SYMBOL(jbd2_journal_start);
 
@@ -449,7 +457,14 @@ int jbd2_journal_extend(handle_t *handle, int nblocks)
 		goto unlock;
 	}
 
+	trace_jbd2_handle_extend(journal->j_fs_dev->bd_dev,
+				 handle->h_transaction->t_tid,
+				 handle->h_type, handle->h_line_no,
+				 handle->h_buffer_credits,
+				 nblocks);
+
 	handle->h_buffer_credits += nblocks;
+	handle->h_requested_credits += nblocks;
 	atomic_add(nblocks, &transaction->t_outstanding_credits);
 	result = 0;
 
@@ -604,12 +619,6 @@ static void warn_dirty_buffer(struct buffer_head *bh)
 	       bdevname(bh->b_bdev, b), (unsigned long long)bh->b_blocknr);
 }
 
-static int sleep_on_shadow_bh(void *word)
-{
-	io_schedule();
-	return 0;
-}
-
 /*
  * If the buffer is already part of the current transaction, then there
  * is nothing we need to do.  If it is already part of a prior
@@ -737,29 +746,41 @@ repeat:
 		 * journaled.  If the primary copy is already going to
 		 * disk then we cannot do copy-out here. */
 
-		if (buffer_shadow(bh)) {
+		if (jh->b_jlist == BJ_Shadow) {
+			DEFINE_WAIT_BIT(wait, &bh->b_state, BH_Unshadow);
+			wait_queue_head_t *wqh;
+
+			wqh = bit_waitqueue(&bh->b_state, BH_Unshadow);
+
 			JBUFFER_TRACE(jh, "on shadow: sleep");
 			jbd_unlock_bh_state(bh);
-			wait_on_bit(&bh->b_state, BH_Shadow,
-				    sleep_on_shadow_bh, TASK_UNINTERRUPTIBLE);
+			/* commit wakes up all shadow buffers after IO */
+			for ( ; ; ) {
+				prepare_to_wait(wqh, &wait.wait,
+						TASK_UNINTERRUPTIBLE);
+				if (jh->b_jlist != BJ_Shadow)
+					break;
+				schedule();
+			}
+			finish_wait(wqh, &wait.wait);
 			goto repeat;
 		}
 
-		/*
-		 * Only do the copy if the currently-owning transaction still
-		 * needs it. If buffer isn't on BJ_Metadata list, the
-		 * committing transaction is past that stage (here we use the
-		 * fact that BH_Shadow is set under bh_state lock together with
-		 * refiling to BJ_Shadow list and at this point we know the
-		 * buffer doesn't have BH_Shadow set).
+		/* Only do the copy if the currently-owning transaction
+		 * still needs it.  If it is on the Forget list, the
+		 * committing transaction is past that stage.  The
+		 * buffer had better remain locked during the kmalloc,
+		 * but that should be true --- we hold the journal lock
+		 * still and the buffer is already on the BUF_JOURNAL
+		 * list so won't be flushed.
 		 *
 		 * Subtle point, though: if this is a get_undo_access,
 		 * then we will be relying on the frozen_data to contain
 		 * the new value of the committed_data record after the
 		 * transaction, so we HAVE to force the frozen_data copy
-		 * in that case.
-		 */
-		if (jh->b_jlist == BJ_Metadata || force_copy) {
+		 * in that case. */
+
+		if (jh->b_jlist != BJ_Forget || force_copy) {
 			JBUFFER_TRACE(jh, "generate frozen data");
 			if (!frozen_buffer) {
 				JBUFFER_TRACE(jh, "allocate memory for buffer");
@@ -1390,6 +1411,13 @@ int jbd2_journal_stop(handle_t *handle)
 	}
 
 	jbd_debug(4, "Handle %p going down\n", handle);
+	trace_jbd2_handle_stats(journal->j_fs_dev->bd_dev,
+				handle->h_transaction->t_tid,
+				handle->h_type, handle->h_line_no,
+				jiffies - handle->h_start_jiffies,
+				handle->h_sync, handle->h_requested_credits,
+				(handle->h_requested_credits -
+				 handle->h_buffer_credits));
 
 	/*
 	 * Implement synchronous transaction batching.  If the handle
@@ -1499,29 +1527,6 @@ int jbd2_journal_stop(handle_t *handle)
 	return err;
 }
 
-/**
- * int jbd2_journal_force_commit() - force any uncommitted transactions
- * @journal: journal to force
- *
- * For synchronous operations: force any uncommitted transactions
- * to disk.  May seem kludgy, but it reuses all the handle batching
- * code in a very simple manner.
- */
-int jbd2_journal_force_commit(journal_t *journal)
-{
-	handle_t *handle;
-	int ret;
-
-	handle = jbd2_journal_start(journal, 1);
-	if (IS_ERR(handle)) {
-		ret = PTR_ERR(handle);
-	} else {
-		handle->h_sync = 1;
-		ret = jbd2_journal_stop(handle);
-	}
-	return ret;
-}
-
 /*
  *
  * List management code snippets: various functions for manipulating the
@@ -1578,10 +1583,10 @@ __blist_del_buffer(struct journal_head **list, struct journal_head *jh)
  * Remove a buffer from the appropriate transaction list.
  *
  * Note that this function can *change* the value of
- * bh->b_transaction->t_buffers, t_forget, t_shadow_list, t_log_list or
- * t_reserved_list.  If the caller is holding onto a copy of one of these
- * pointers, it could go bad.  Generally the caller needs to re-read the
- * pointer from the transaction_t.
+ * bh->b_transaction->t_buffers, t_forget, t_iobuf_list, t_shadow_list,
+ * t_log_list or t_reserved_list.  If the caller is holding onto a copy of one
+ * of these pointers, it could go bad.  Generally the caller needs to re-read
+ * the pointer from the transaction_t.
  *
  * Called under j_list_lock.
  */
@@ -1611,8 +1616,14 @@ static void __jbd2_journal_temp_unlink_buffer(struct journal_head *jh)
 	case BJ_Forget:
 		list = &transaction->t_forget;
 		break;
+	case BJ_IO:
+		list = &transaction->t_iobuf_list;
+		break;
 	case BJ_Shadow:
 		list = &transaction->t_shadow_list;
+		break;
+	case BJ_LogCtl:
+		list = &transaction->t_log_list;
 		break;
 	case BJ_Reserved:
 		list = &transaction->t_reserved_list;
@@ -1622,7 +1633,7 @@ static void __jbd2_journal_temp_unlink_buffer(struct journal_head *jh)
 	__blist_del_buffer(list, jh);
 	jh->b_jlist = BJ_None;
 	if (test_clear_buffer_jbddirty(bh))
-		mark_buffer_dirty_sync(bh); /* Expose it to the VM */
+		mark_buffer_dirty(bh);	/* Expose it to the VM */
 }
 
 /*
@@ -2108,8 +2119,14 @@ void __jbd2_journal_file_buffer(struct journal_head *jh,
 	case BJ_Forget:
 		list = &transaction->t_forget;
 		break;
+	case BJ_IO:
+		list = &transaction->t_iobuf_list;
+		break;
 	case BJ_Shadow:
 		list = &transaction->t_shadow_list;
+		break;
+	case BJ_LogCtl:
+		list = &transaction->t_log_list;
 		break;
 	case BJ_Reserved:
 		list = &transaction->t_reserved_list;
