@@ -3052,6 +3052,7 @@ SYSCALL_DEFINE5(linkat, int, olddfd, const char __user *, oldname,
 	int how = 0;
 	int error;
 
+	memset(&old_path, 0, sizeof(old_path));
 	if ((flags & ~(AT_SYMLINK_FOLLOW | AT_EMPTY_PATH)) != 0)
 		return -EINVAL;
 	/*
