@@ -118,7 +118,7 @@ void unlock_policy_rwsem_##mode(int cpu)				\
 	BUG_ON(policy_cpu == -1);					\
 	up_##mode(&per_cpu(cpu_policy_rwsem, policy_cpu));		\
 }
- 
+
 unlock_policy_rwsem(read, cpu);
 unlock_policy_rwsem(write, cpu);
 
@@ -461,7 +461,6 @@ static int cpufreq_parse_governor(char *str_governor, unsigned int *policy,
 out:
 	return err;
 }
-
 
 /**
  * cpufreq_per_cpu_attr_read() / show_##file_name() -
@@ -1993,7 +1992,6 @@ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
 }
 EXPORT_SYMBOL(cpufreq_get_policy);
 
-
 /*
  * data   : current policy.
  * policy : policy to be set.
@@ -2001,7 +1999,7 @@ EXPORT_SYMBOL(cpufreq_get_policy);
 static int __cpufreq_set_policy(struct cpufreq_policy *data,
 				struct cpufreq_policy *policy)
 {
-	int ret = 0, failed = 1;
+	int ret = 0;
 	unsigned int qmin, qmax;
 	unsigned int pmin = policy->min;
 	unsigned int pmax = policy->max;
@@ -2073,6 +2071,7 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
 
 			/* start new governor */
 			data->governor = policy->governor;
+
 			if (__cpufreq_governor(data, CPUFREQ_GOV_START)) {
 				/* new governor failed, so re-start old one */
 				pr_debug("starting governor %s failed\n",

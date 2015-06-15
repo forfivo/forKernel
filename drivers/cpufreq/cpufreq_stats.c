@@ -384,7 +384,7 @@ static int __init cpufreq_stats_init(void)
 				CPUFREQ_POLICY_NOTIFIER);
 	if (ret)
 		return ret;
-	
+
 	register_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
 	for_each_online_cpu(cpu)
 		cpufreq_update_policy(cpu);
@@ -399,6 +399,7 @@ static int __init cpufreq_stats_init(void)
 			cpufreq_stats_free_table(cpu);
 		return ret;
 	}
+
 	return 0;
 }
 static void __exit cpufreq_stats_exit(void)
