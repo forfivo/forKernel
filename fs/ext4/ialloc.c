@@ -704,6 +704,14 @@ got_group:
 			ext4_debug("ext4_get_group_desc error: %d\n", group);
 			print_bh(sb, group_desc_bh, 0, EXT4_BLOCK_SIZE(sb));
 			goto fail;
+
+		/*
+		 * Check free inodes count before loading bitmap.
+		 */
+		if (ext4_free_inodes_count(sb, gdp) == 0) {
+			if (++group == ngroups)
+				group = 0;
+			continue;
 		}
 
 		if (inode_bitmap_bh) {
