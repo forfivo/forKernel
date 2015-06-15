@@ -1528,7 +1528,7 @@ static void sec_bat_do_fullcharged(
 	 * activated wake lock in a few seconds
 	 */
 	if (battery->pdata->polling_type == SEC_BATTERY_MONITOR_ALARM)
-		wake_lock_timeout(&battery->vbus_wake_lock, HZ * 10);
+		wake_lock_timeout(&battery->vbus_wake_lock, HZ);
 }
 
 static bool sec_bat_fullcharged_check(
@@ -1959,7 +1959,7 @@ skip_updating_status:
 #endif
 
 	if (battery->capacity <= 0)
-		wake_lock_timeout(&battery->monitor_wake_lock, HZ * 5);
+		wake_lock_timeout(&battery->monitor_wake_lock, HZ * 2);
 	else
 		wake_unlock(&battery->monitor_wake_lock);
 
