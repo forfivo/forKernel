@@ -1763,7 +1763,7 @@ int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list)
 		ret = blocking_notifier_chain_unregister(
 				&cpufreq_policy_notifier_list, nb);
 		break;
-case CPUFREQ_GOVINFO_NOTIFIER:
+	case CPUFREQ_GOVINFO_NOTIFIER:
 		ret = atomic_notifier_chain_unregister(
 				&cpufreq_govinfo_notifier_list, nb);
 		break;
