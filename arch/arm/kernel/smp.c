@@ -775,7 +775,7 @@ core_initcall(register_cpufreq_notifier);
 
 static void flush_all_cpu_cache(void *info)
 {
-	flush_dcache_level(flush_cache_level_cpu());
+	flush_cache_louis();
 }
 
 void flush_all_cpu_caches(void)

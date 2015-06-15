@@ -314,7 +314,7 @@ __v7_setup:
 	stmia   r12, {r0-r5, r7, r9, r11, lr}
 	mrc     p15, 1, r0, c0, c0, 1
 	ubfx    r0, r0, #21, #3
-	bl      v7_flush_dcache_level
+	bl      v7_flush_dcache_louis
 	ldmia   r12, {r0-r5, r7, r9, r11, lr}
 
 	stmia   r12, {r0-r3, r5, r6, r10, lr}
