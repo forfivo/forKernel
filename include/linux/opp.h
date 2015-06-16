@@ -26,6 +26,7 @@ struct opp {
 	unsigned long u_volt;
 
 	struct device_opp *dev_opp;
+	struct rcu_head head;
 };
 
 struct device_opp {
