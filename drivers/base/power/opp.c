@@ -23,6 +23,7 @@
 #include <linux/rcupdate.h>
 #include <linux/opp.h>
 #include <linux/of.h>
+#include <linux/export.h>
 
 /*
  * Internal data structure organization with the OPP layer library is as
@@ -162,6 +163,7 @@ unsigned long opp_get_voltage(struct opp *opp)
 
 	return v;
 }
+EXPORT_SYMBOL(opp_get_voltage);
 
 /**
  * opp_get_freq() - Gets the frequency corresponding to an available opp
@@ -191,6 +193,7 @@ unsigned long opp_get_freq(struct opp *opp)
 
 	return f;
 }
+EXPORT_SYMBOL(opp_get_freq);
 
 /**
  * opp_get_opp_count() - Get number of opps available in the opp list
@@ -223,6 +226,7 @@ int opp_get_opp_count(struct device *dev)
 
 	return count;
 }
+EXPORT_SYMBOL(opp_get_opp_count);
 
 /**
  * opp_find_freq_exact() - search for an exact frequency
@@ -270,6 +274,7 @@ struct opp *opp_find_freq_exact(struct device *dev, unsigned long freq,
 
 	return opp;
 }
+EXPORT_SYMBOL(opp_find_freq_exact);
 
 /**
  * opp_find_freq_ceil() - Search for an rounded ceil freq
@@ -312,6 +317,7 @@ struct opp *opp_find_freq_ceil(struct device *dev, unsigned long *freq)
 
 	return opp;
 }
+EXPORT_SYMBOL(opp_find_freq_ceil);
 
 /**
  * opp_find_freq_floor() - Search for a rounded floor freq
@@ -358,6 +364,7 @@ struct opp *opp_find_freq_floor(struct device *dev, unsigned long *freq)
 
 	return opp;
 }
+EXPORT_SYMBOL(opp_find_freq_floor);
 
 /**
  * opp_add()  - Add an OPP table from a table definitions
@@ -554,6 +561,7 @@ int opp_enable(struct device *dev, unsigned long freq)
 {
 	return opp_set_availability(dev, freq, true);
 }
+EXPORT_SYMBOL(opp_enable);
 
 /**
  * opp_disable() - Disable a specific OPP
@@ -575,6 +583,7 @@ int opp_disable(struct device *dev, unsigned long freq)
 {
 	return opp_set_availability(dev, freq, false);
 }
+EXPORT_SYMBOL(opp_disable);
 
 #ifdef CONFIG_CPU_FREQ
 /**
