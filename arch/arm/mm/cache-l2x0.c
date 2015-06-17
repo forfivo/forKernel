@@ -131,7 +131,7 @@ static inline void l2x0_flush_line(unsigned long addr)
 }
 #endif
 
-static void l2x0_cache_sync(void)
+void l2x0_cache_sync(void)
 {
 	unsigned long flags;
 
