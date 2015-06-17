@@ -132,4 +132,7 @@
 
 #define PR_GET_TID_ADDRESS	40
 
+#define PR_SET_VMA		0x53564d41
+# define PR_SET_VMA_ANON_NAME		0
+
 #endif /* _LINUX_PRCTL_H */
