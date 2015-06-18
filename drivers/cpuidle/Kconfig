@@ -28,3 +28,13 @@ config EXYNOS_CPUIDLE_C2
 	default y
 	help
 	  Enable C2 state on cpuidle
+
+if CPU_IDLE
+
+config CPU_IDLE_CALXEDA
+	bool "CPU Idle Driver for Calxeda processors"
+	depends on ARCH_HIGHBANK
+	help
+	  Select this to enable cpuidle on Calxeda processors.
+
+endif
