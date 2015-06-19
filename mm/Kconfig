@@ -529,11 +529,6 @@ config SWAP_ENABLE_READAHEAD
 	  This behaviour is good at disk-based system, but not on in-memory
 	  compression (e.g. zram).
 
-config DISABLE_LUMPY_RECLAIM
-	bool "Disable lumpy reclaim"
-	default y
-	depends on ZSWAP
-
 config DIRECT_RECLAIM_FILE_PAGES_ONLY
 	bool "Reclaim file pages only"
 	default n
