@@ -1118,8 +1118,8 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 			unsigned long count, struct list_head *list,
 			int migratetype, int cold)
 {
-	int i;
-	
+	int mt = migratetype, i;
+
 	spin_lock(&zone->lock);
 	for (i = 0; i < count; ++i) {
 		struct page *page = __rmqueue(zone, order, migratetype);
@@ -1382,7 +1382,7 @@ void free_hot_cold_page_list(struct list_head *list, int cold)
  */
 void split_page(struct page *page, unsigned int order)
 {
-	int mt = migratetype, i;
+	int i;
 
 	VM_BUG_ON(PageCompound(page));
 	VM_BUG_ON(!page_count(page));
