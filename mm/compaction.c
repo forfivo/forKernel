@@ -21,11 +21,6 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/compaction.h>
 
-static inline bool migrate_async_suitable(int migratetype)
-{
-	return is_migrate_cma(migratetype) || migratetype == MIGRATE_MOVABLE;
-}
-
 static unsigned long release_freepages(struct list_head *freelist)
 {
 	struct page *page, *next;
@@ -48,6 +43,11 @@ static void map_pages(struct list_head *list)
 		arch_alloc_page(page, 0);
 		kernel_map_pages(page, 1, 1);
 	}
+}
+
+static inline bool migrate_async_suitable(int migratetype)
+{
+	return is_migrate_cma(migratetype) || migratetype == MIGRATE_MOVABLE;
 }
 
 /*
@@ -470,8 +470,8 @@ static bool suitable_migration_target(struct page *page)
 	if (PageBuddy(page) && page_order(page) >= pageblock_order)
 		return true;
 
-	/* If the block is MIGRATE_MOVABLE, allow migration */
-	if (migratetype == MIGRATE_MOVABLE)
+	/* If the block is MIGRATE_MOVABLE or MIGRATE_CMA, allow migration */
+	if (migrate_async_suitable(migratetype))
 		return true;
 
 	/* Otherwise skip the block */
