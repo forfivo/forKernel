@@ -5785,6 +5785,8 @@ static int __alloc_contig_migrate_range(unsigned long start, unsigned long end)
 			break;
 		}
 
+		reclaim_clean_pages_from_list(cc.zone, &cc.migratepages);
+
 		ret = migrate_pages(&cc.migratepages,
 				    __alloc_contig_migrate_alloc,
 				    0, false, true);
