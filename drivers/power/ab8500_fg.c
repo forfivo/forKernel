@@ -558,7 +558,7 @@ cc_err:
 	}
 
 	/* Return and WFI */
-	INIT_COMPLETION(di->ab8500_fg_complete);
+	reinit_completion(&di->ab8500_fg_complete);
 	enable_irq(di->irq);
 
 	/* Note: cc_lock is still locked */

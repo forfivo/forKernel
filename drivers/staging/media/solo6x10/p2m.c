@@ -99,7 +99,7 @@ int solo_p2m_dma_desc(struct solo_dev *solo_dev, u8 id,
 
 	solo_reg_write(solo_dev, SOLO_P2M_CONTROL(id), 0);
 
-	INIT_COMPLETION(p2m_dev->completion);
+	reinit_completion(&p2m_dev->completion);
 	p2m_dev->error = 0;
 
 	/* Enable the descriptors */

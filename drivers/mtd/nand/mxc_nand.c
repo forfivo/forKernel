@@ -337,7 +337,7 @@ static void wait_op_done(struct mxc_nand_host *host, int useirq)
 
 	if (useirq) {
 		if (!host->check_int(host)) {
-			INIT_COMPLETION(host->op_completion);
+			reinit_completion(&host->op_completion);
 			host->irq_control(host, 1);
 			wait_for_completion(&host->op_completion);
 		}

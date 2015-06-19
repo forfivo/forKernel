@@ -218,7 +218,7 @@ static inline void ub_init_completion(struct ub_completion *x)
 	spin_lock_init(&x->lock);
 }
 
-#define UB_INIT_COMPLETION(x)	((x).done = 0)
+#define UB_reinit_completion(&x)	((x).done = 0)
 
 static void ub_complete(struct ub_completion *x)
 {
@@ -896,7 +896,7 @@ static int ub_scsi_cmd_start(struct ub_dev *sc, struct ub_scsi_cmd *cmd)
 	/* copy the command payload */
 	memcpy(bcb->CDB, cmd->cdb, UB_MAX_CDB_SIZE);
 
-	UB_INIT_COMPLETION(sc->work_done);
+	UB_reinit_completion(&sc->work_done);
 
 	sc->last_pipe = sc->send_bulk_pipe;
 	usb_fill_bulk_urb(&sc->work_urb, sc->dev, sc->send_bulk_pipe,
@@ -1282,7 +1282,7 @@ static void ub_data_start(struct ub_dev *sc, struct ub_scsi_cmd *cmd)
 	int pipe;
 	int rc;
 
-	UB_INIT_COMPLETION(sc->work_done);
+	UB_reinit_completion(&sc->work_done);
 
 	if (cmd->dir == UB_DIR_READ)
 		pipe = sc->recv_bulk_pipe;
@@ -1329,7 +1329,7 @@ static int __ub_state_stat(struct ub_dev *sc, struct ub_scsi_cmd *cmd)
 {
 	int rc;
 
-	UB_INIT_COMPLETION(sc->work_done);
+	UB_reinit_completion(&sc->work_done);
 
 	sc->last_pipe = sc->recv_bulk_pipe;
 	usb_fill_bulk_urb(&sc->work_urb, sc->dev, sc->recv_bulk_pipe,
@@ -1447,7 +1447,7 @@ static int ub_submit_clear_stall(struct ub_dev *sc, struct ub_scsi_cmd *cmd,
 	cr->wIndex = cpu_to_le16(endp);
 	cr->wLength = cpu_to_le16(0);
 
-	UB_INIT_COMPLETION(sc->work_done);
+	UB_reinit_completion(&sc->work_done);
 
 	usb_fill_control_urb(&sc->work_urb, sc->dev, sc->send_ctrl_pipe,
 	    (unsigned char*) cr, NULL, 0, ub_urb_complete, sc);

@@ -611,7 +611,7 @@ static int out_drv_event(struct snd_soc_dapm_widget *w,
 
 		/* use volume ramp for power-down */
 		out->ramp = TWL6040_RAMP_DOWN;
-		INIT_COMPLETION(out->ramp_done);
+		reinit_completion(&out->ramp_done);
 
 		queue_delayed_work(priv->workqueue, work, msecs_to_jiffies(1));
 

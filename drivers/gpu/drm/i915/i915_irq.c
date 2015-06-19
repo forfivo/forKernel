@@ -1218,7 +1218,7 @@ void i915_handle_error(struct drm_device *dev, bool wedged)
 	i915_report_and_clear_eir(dev);
 
 	if (wedged) {
-		INIT_COMPLETION(dev_priv->error_completion);
+		reinit_completion(&dev_priv->error_completion);
 		atomic_set(&dev_priv->mm.wedged, 1);
 
 		/*
