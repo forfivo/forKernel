@@ -24,6 +24,7 @@ obj-$(CONFIG_CPU_FREQ_GOV_LIONHEART)		+= cpufreq_lionheart.o
 obj-$(CONFIG_CPU_FREQ_GOV_DARKNESS)		+= cpufreq_darkness.o
 obj-$(CONFIG_CPU_FREQ_GOV_INTELLIMM)	        += cpufreq_intellimm.o
 obj-$(CONFIG_CPU_FREQ_GOV_ALUCARD)	+= cpufreq_alucard.o
+obj-$(CONFIG_CPU_FREQ_GOV_IMPULSE)	+= cpufreq_impulse.o
 obj-$(CONFIG_CPU_BOOST)				+= cpu-boost.o
 
 # CPUfreq cross-arch helpers
