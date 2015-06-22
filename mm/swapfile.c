@@ -1783,6 +1783,7 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 #ifdef CONFIG_FRONTSWAP
 	frontswap_invalidate_area(type);
 #endif
+	spin_unlock(&p->lock);
 	spin_unlock(&swap_lock);
 	mutex_unlock(&swapon_mutex);
 	vfree(swap_map);
@@ -2307,7 +2308,6 @@ bad_swap:
 	spin_lock(&swap_lock);
 	p->swap_file = NULL;
 	p->flags = 0;
-	spin_unlock(&p->lock);
 	spin_unlock(&swap_lock);
 	vfree(swap_map);
 	if (swap_file) {

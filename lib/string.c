@@ -620,6 +620,7 @@ void *memcpy(void *dest, const void *src, size_t count)
 
 	/* Copy from the beginning to the end */
 	mem_copy_fwd(dstp, srcp, count);
+	return dest;
 }
 EXPORT_SYMBOL(memcpy);
 #endif

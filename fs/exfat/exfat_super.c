@@ -266,13 +266,13 @@ static int __exfat_revalidate(struct dentry *dentry)
 	return 0;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,00)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,00) //fix for modded 3.4 kernel, was 3.7.00
 static int exfat_revalidate(struct dentry *dentry, unsigned int flags)
 #else
 static int exfat_revalidate(struct dentry *dentry, struct nameidata *nd)
 #endif
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,00)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,00) //fix for modded 3.4 kernel, was 3.7.00
 	if (flags & LOOKUP_RCU)
 		return -ECHILD;
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,00)
@@ -285,13 +285,13 @@ static int exfat_revalidate(struct dentry *dentry, struct nameidata *nd)
 	return __exfat_revalidate(dentry);
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,00)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,00) //fix for modded 3.4 kernel, was 3.7.00
 static int exfat_revalidate_ci(struct dentry *dentry, unsigned int flags)
 #else
 static int exfat_revalidate_ci(struct dentry *dentry, struct nameidata *nd)
 #endif
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,00)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,00) //fix for modded 3.4 kernel, was 3.7.00
 	if (flags & LOOKUP_RCU)
 		return -ECHILD;
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,00)
