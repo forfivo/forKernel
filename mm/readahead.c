@@ -414,10 +414,10 @@ static int try_context_readahead(struct address_space *mapping,
 	size = count_history_pages(mapping, ra, offset, max);
 
 	/*
-	 * no history pages:
+	 * not enough history pages:
 	 * it could be a random read
 	 */
-	if (!size <= req_size)
+	if (size <= req_size)
 		return 0;
 
 	/*
