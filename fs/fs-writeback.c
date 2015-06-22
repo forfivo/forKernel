@@ -773,7 +773,6 @@ long writeback_inodes_wb(struct bdi_writeback *wb, long nr_pages,
 		.sync_mode	= WB_SYNC_NONE,
 		.range_cyclic	= 1,
 		.reason		= reason,
-		.for_sync	= 1,
 	};
 
 	spin_lock(&wb->list_lock);
@@ -1423,6 +1422,7 @@ void sync_inodes_sb(struct super_block *sb)
 		.range_cyclic	= 0,
 		.done		= &done,
 		.reason		= WB_REASON_SYNC,
+		.for_sync	= 1,
 	};
 
 	/* Nothing to do? */
