@@ -6,13 +6,13 @@ cat << CTAG
     sections: [
                 `. /res/synapse/json.gen.myabout`
 		`. /res/synapse/json.gen.cpufreq`
-                `. /res/synapse/json.gen.cpu_multicore`
                 `. /res/synapse/json.gen.cpuvolt`
                 `. /res/synapse/json.gen.cpugov`
                 `. /res/synapse/json.gen.devfreq`
                 `. /res/synapse/json.gen.gpu`
                 `. /res/synapse/json.gen.gpuqos`
-                `. /res/synapse/json.gen.io`
+                `. /res/synapse/json.gen.internal_io`
+                `. /res/synapse/json.gen.external_io`
                 `. /res/synapse/json.gen.cortex`
                 `. /res/synapse/json.gen.memory`
                 `. /res/synapse/json.gen.advanced`

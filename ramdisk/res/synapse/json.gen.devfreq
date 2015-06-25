@@ -5,7 +5,7 @@ cat << CTAG
     name:DEVFREQ,
     elements:[
         { STitleBar:{
-                title:"CPU Interal and Memory Frequency voltage control"
+                title:"CPU Internal and Memory Frequency voltage control"
         }},
         { SDescription:{
                 description:" MIF/INT represent the SoCs memory interface and internal components. The DVFS logic controls both frequencies in pairwise steps, although they frequencies are independant, they are defined together. MIF or Memory Interface is the direct voltage and frequency used on the C2C bus to the memory chip. INT or internal voltage and frequency are the internal bus and all components connected to it other than the CPU and GPU cores. This encompasses blocks like the camera interfaces, the ISP, the I/O controllers and the MFC (Hardware decoder). The configurables below control the scaling parameters of the DVFS logic of this block."

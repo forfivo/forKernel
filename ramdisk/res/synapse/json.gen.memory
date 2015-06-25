@@ -47,7 +47,7 @@ cat << CTAG
 		unit:" ms",
 		step:100,
 		min:0,
-		max:1500,
+		max:3000,
        	 	default:`cat /sys/kernel/mm/uksm/sleep_millisecs`,
 		action:"generic /sys/kernel/mm/uksm/sleep_millisecs"
 	}},

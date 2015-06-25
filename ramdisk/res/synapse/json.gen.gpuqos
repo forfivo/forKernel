@@ -1,7 +1,7 @@
 #!/sbin/busybox sh
 
 CPUFREQS='2100:"2100 MHz", 2000:"2000 MHz", 1900:"1900 MHz", 1800:"1800 MHz", 1700:"1700 MHz", 1600:"1600 MHz", 1500:"1500 MHz", 1400:"1400 MHz", 1300:"1300 MHz", 1200:"1200 MHz", 1100:"1100 MHz", 1000:"1000 MHz", 900:"900 MHz", 800:"800 MHz", 650:"1300 MHz", 600:"1200 MHz", 550:"1100 MHz", 500:"1000 MHz", 450:"900 MHz", 400:"800 MHz", 350:"700 MHz", 300:"600 MHz", 250:"500 MHz", 200:"400 MHz", 150:"300 MHz", 100:"200 MHz"'
-MIFFREQS='933:"933 MHz", 800:"800 MHz", 733:"733 MHz", 667:"667 MHz", 533:"533 MHz", 400:"400 MHz", 266:"266 MHz", 200:"200 MHz", 160:"160 MHz", 133:"133 MHz"'
+MIFFREQS='933:"933 MHz", 800:"800 MHz", 733:"733 MHz", 666:"666 MHz", 533:"533 MHz", 400:"400 MHz", 266:"266 MHz", 200:"200 MHz", 160:"160 MHz", 133:"133 MHz"'
 INTFREQS='600:"600 MHz", 500:"500 MHz", 480:"480 MHz", 460:"460 MHz", 440:"440 MHz", 400:"400 MHz", 333:"333 MHz", 222:"222 MHz", 111:"111 MHz", 83:"83 MHz"'
 
 cat << CTAG
@@ -104,10 +104,21 @@ cat << CTAG
 		}
 	}},
 		{ SSeekBar:{
-       		title:"667 MHz",
+       		title:"666 MHz",
 		default: 800,
 		unit:" MHz",
-		action:"gpumif 667",
+		action:"gpumif 666",
+		values:{
+`
+			echo $MIFFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"733 MHz",
+		default: 800,
+		unit:" MHz",
+		action:"gpumif 733",
 		values:{
 `
 			echo $MIFFREQS
@@ -213,10 +224,22 @@ cat << CTAG
 		}
 	}},
 		{ SSeekBar:{
-       		title:"667 MHz",
+       		title:"666 MHz",
 		default: 400,
 		unit:" MHz",
-		action:"gpuint 667",
+		action:"gpuint 666",
+		values:{
+`
+			echo $INTFREQS
+`
+		}
+	}},
+	}},
+		{ SSeekBar:{
+       		title:"733 MHz",
+		default: 400,
+		unit:" MHz",
+		action:"gpuint 733",
 		values:{
 `
 			echo $INTFREQS
@@ -322,10 +345,21 @@ cat << CTAG
 		}
 	}},
 		{ SSeekBar:{
-       		title:"667 MHz",
+       		title:"666 MHz",
 		default: 1600,
 		unit:" MHz",
-		action:"gpucpu 667",
+		action:"gpucpu 666",
+		values:{
+`
+			echo $CPUFREQS
+`
+		}
+	}},
+		{ SSeekBar:{
+       		title:"733 MHz",
+		default: 1600,
+		unit:" MHz",
+		action:"gpucpu 733",
 		values:{
 `
 			echo $CPUFREQS

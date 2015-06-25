@@ -2,10 +2,10 @@
 
 cat << CTAG
 {
-    name:IO,
+    name:External IO,
     elements:[
     	{ SPane:{
-		title:"I/O Schedulers",
+		title:"External I/O Scheduler",
 		description:" Set the active I/O elevator algorithm. The I/O Scheduler decides how to prioritize and handle I/O requests. More info: <a href='http://timos.me/tm/wiki/ioscheduler'>Wiki</a>"
     	}},
 	{ SDescription:{
@@ -13,19 +13,19 @@ cat << CTAG
 	}},
 	{ SOptionList:{
 		title:"Storage scheduler",
-		default:`cat /sys/block/mmcblk0/queue/scheduler | busybox awk 'NR>1{print $1}' RS=[ FS=]`,
-		action:"ioset scheduler",
-		values:[`while read values; do busybox printf "%s, \n" $values | busybox tr -d '[]'; done < /sys/block/mmcblk0/queue/scheduler`],
+		default:`cat /sys/block/mmcblk1/queue/scheduler | busybox awk 'NR>1{print $1}' RS=[ FS=]`,
+		action:"ioset_external scheduler",
+		values:[`while read values; do busybox printf "%s, \n" $values | busybox tr -d '[]'; done < /sys/block/mmcblk1/queue/scheduler`],
 			notify:[
 				{
 					on:APPLY,
 					do:[ REFRESH, CANCEL ],
-					to:"/sys/block/mmcblk0/queue/iosched"
+					to:"/sys/block/mmcblk1/queue/iosched"
 				},
 				{
 					on:REFRESH,
 					do:REFRESH,
-					to:"/sys/block/mmcblk0/queue/iosched"
+					to:"/sys/block/mmcblk1/queue/iosched"
 				}
 			]
 	}},
@@ -38,15 +38,15 @@ cat << CTAG
 		min:64,
 		unit:" KB",
 		step:64,
-		default:`cat /sys/block/mmcblk0/queue/read_ahead_kb`,
-		action:"ioset queue read_ahead_kb"
+		default:`cat /sys/block/mmcblk1/queue/read_ahead_kb`,
+		action:"ioset_external queue read_ahead_kb"
 	}},
 	{ SDescription:{
 		description:" "
 	}},
 	{ SPane:{
 		title:"General I/O Tunables",
-		description:" Set the internal storage general tunables"
+		description:" Set the external storage general tunables"
 	}},
 	{ SDescription:{
 		description:" "
@@ -54,8 +54,8 @@ cat << CTAG
 	{ SCheckBox:{
 		description:" Draw entropy from spinning (rotational) storage. Default is Disabled",
 		label:"Add Random",
-		default:`cat /sys/block/mmcblk0/queue/add_random`,
-		action:"ioset queue add_random"
+		default:`cat /sys/block/mmcblk1/queue/add_random`,
+		action:"ioset_external queue add_random"
 	}},
 	{ SDescription:{
 		description:" "
@@ -63,8 +63,8 @@ cat << CTAG
 	{ SCheckBox:{
 		description:" Maintain I/O statistics for this storage device. Disabling will break I/O monitoring apps. Default is Enabled.",
 		label:"I/O Stats",
-		default:`cat /sys/block/mmcblk0/queue/iostats`,
-		action:"ioset queue iostats"
+		default:`cat /sys/block/mmcblk1/queue/iostats`,
+		action:"ioset_external queue iostats"
 	}},
 	{ SDescription:{
 		description:" "
@@ -72,8 +72,8 @@ cat << CTAG
 	{ SCheckBox:{
 		description:" Treat device as rotational storage. Default is Disabled",
 		label:"Rotational",
-		default:`cat /sys/block/mmcblk0/queue/rotational`,
-		action:"ioset queue rotational"
+		default:`cat /sys/block/mmcblk1/queue/rotational`,
+		action:"ioset_external queue rotational"
 	}},
 	{ SDescription:{
 		description:" "
@@ -81,8 +81,8 @@ cat << CTAG
 	{ SSeekBar:{
 		title:" No Merges",
 		description:" Types of merges (prioritization) the scheduler queue for this storage device allows. Default is All.",
-		default:`cat /sys/block/mmcblk0/queue/nomerges`,
-		action:"ioset queue nomerges",
+		default:`cat /sys/block/mmcblk1/queue/nomerges`,
+		action:"ioset_external queue nomerges",
 		values:{
 			`NM='0:"All", 1:"Simple Only", 2:"None",'
 			echo $NM`
@@ -94,8 +94,8 @@ cat << CTAG
 	{ SSeekBar:{
 		title:"RQ Affinity",
 		description:" Try to have scheduler requests complete on the CPU core they were made from. Higher is more aggressive. Some kernels only support 0-1. Default is 1.",
-		default:`cat /sys/block/mmcblk0/queue/rq_affinity`,
-		action:"ioset queue rq_affinity",
+		default:`cat /sys/block/mmcblk1/queue/rq_affinity`,
+		action:"ioset_external queue rq_affinity",
 		values:{
 			`RQA='0:"0: Disabled", 1:"1", 2:"2"'
 			echo $RQA`
@@ -111,7 +111,7 @@ cat << CTAG
 		description:""
 	}},
 	{ STreeDescriptor:{
-		path:"/sys/block/mmcblk0/queue/iosched",
+		path:"/sys/block/mmcblk1/queue/iosched",
 		generic: {
 			directory: {},
 			element: {
