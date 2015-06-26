@@ -2330,9 +2330,6 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 		case PR_GET_TID_ADDRESS:
 			error = prctl_get_tid_address(me, (int __user **)arg2);
 			break;
-		case PR_SET_VMA:
-			error = prctl_set_vma(arg2, arg3, arg4, arg5);
-			break;
 		case PR_SET_TIMERSLACK_PID:
 			if (current->pid != (pid_t)arg3 &&
 					!capable(CAP_SYS_NICE))
@@ -2352,6 +2349,9 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 				tsk->timer_slack_ns = arg2;
 			put_task_struct(tsk);
 			error = 0;
+		case PR_SET_VMA:
+			error = prctl_set_vma(arg2, arg3, arg4, arg5);
+			break;
 		case PR_SET_CHILD_SUBREAPER:
 			me->signal->is_child_subreaper = !!arg2;
 			break;
