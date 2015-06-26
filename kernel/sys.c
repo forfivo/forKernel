@@ -2368,6 +2368,11 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 			if (arg2 || arg3 || arg4 || arg5)
 				return -EINVAL;
 			return task_no_new_privs(current) ? 1 : 0;
+		default:
+			error = -EINVAL;
+			break;
+	}
+	return error;
 }
 
 SYSCALL_DEFINE3(getcpu, unsigned __user *, cpup, unsigned __user *, nodep,
