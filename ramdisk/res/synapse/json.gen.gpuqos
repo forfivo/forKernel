@@ -50,7 +50,7 @@ cat << CTAG
 	}},
 		{ SSeekBar:{
        		title:"350 MHz",
-		default: 667,
+		default: 666,
 		unit:" MHz",
 		action:"gpumif 350",
 		values:{
@@ -233,7 +233,6 @@ cat << CTAG
 			echo $INTFREQS
 `
 		}
-	}},
 	}},
 		{ SSeekBar:{
        		title:"733 MHz",
