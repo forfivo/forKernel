@@ -231,7 +231,8 @@ void smpboot_unpark_threads(unsigned int cpu)
 
 	mutex_lock(&smpboot_threads_lock);
 	list_for_each_entry(cur, &hotplug_threads, list)
-		smpboot_unpark_thread(cur, cpu);
+		if (cpumask_test_cpu(cpu, cur->cpumask))
+			smpboot_unpark_thread(cur, cpu);
 	mutex_unlock(&smpboot_threads_lock);
 }
 
@@ -257,6 +258,15 @@ static void smpboot_destroy_threads(struct smp_hotplug_thread *ht)
 {
 	unsigned int cpu;
 
+	/* Unpark any threads that were voluntarily parked. */
+	for_each_cpu_not(cpu, ht->cpumask) {
+		if (cpu_online(cpu)) {
+			struct task_struct *tsk = *per_cpu_ptr(ht->store, cpu);
+			if (tsk)
+				kthread_unpark(tsk);
+		}
+	}
+
 	/* We need to destroy also the parked threads of offline cpus */
 	for_each_possible_cpu(cpu) {
 		struct task_struct *tsk = *per_cpu_ptr(ht->store, cpu);
@@ -279,6 +289,10 @@ int smpboot_register_percpu_thread(struct smp_hotplug_thread *plug_thread)
 {
 	unsigned int cpu;
 	int ret = 0;
+
+	if (!alloc_cpumask_var(&plug_thread->cpumask, GFP_KERNEL))
+		return -ENOMEM;
+	cpumask_copy(plug_thread->cpumask, cpu_possible_mask);
 
 	get_online_cpus();
 	mutex_lock(&smpboot_threads_lock);
@@ -312,5 +326,6 @@ void smpboot_unregister_percpu_thread(struct smp_hotplug_thread *plug_thread)
 	smpboot_destroy_threads(plug_thread);
 	mutex_unlock(&smpboot_threads_lock);
 	put_online_cpus();
+	free_cpumask_var(plug_thread->cpumask);
 }
 EXPORT_SYMBOL_GPL(smpboot_unregister_percpu_thread);
