@@ -205,9 +205,10 @@ static struct ion_buffer *ion_buffer_create(struct ion_heap *heap,
 	buffer->size = len;
 
 	table = heap->ops->map_dma(heap, buffer);
-	if (IS_ERR_OR_NULL(table)) {
-		pr_err("%s: failed to obtain sgtable from heap '%s'\n",
-				__func__, heap->name ? heap->name : "");
+	if (WARN_ONCE(table == NULL,
+			"heap->ops->map_dma should return ERR_PTR on error"))
+		table = ERR_PTR(-EINVAL);
+	if (IS_ERR(table)) {
 		heap->ops->free(buffer);
 		kfree(buffer);
 		return ERR_PTR(PTR_ERR(table));
@@ -413,7 +414,7 @@ static struct ion_handle *ion_handle_lookup(struct ion_client *client,
 		if (handle->buffer == buffer)
 			return handle;
 	}
-	return NULL;
+	return ERR_PTR(-EINVAL);
 }
 
 static bool ion_handle_validate(struct ion_client *client, struct ion_handle *handle)
@@ -508,7 +509,7 @@ struct ion_handle *ion_alloc(struct ion_client *client, size_t len,
 		if (!((1 << heap->id) & heap_id_mask))
 			continue;
 		buffer = ion_buffer_create(heap, dev, len, align, flags);
-		if (!IS_ERR_OR_NULL(buffer))
+		if (!IS_ERR(buffer))
 			break;
 	}
 	up_read(&dev->lock);
@@ -609,7 +610,10 @@ static void *ion_buffer_kmap_get(struct ion_buffer *buffer)
 		return buffer->vaddr;
 	}
 	vaddr = buffer->heap->ops->map_kernel(buffer->heap, buffer);
-	if (IS_ERR_OR_NULL(vaddr))
+	if (WARN_ONCE(vaddr == NULL,
+			"heap->ops->map_kernel should return ERR_PTR on error"))
+		return ERR_PTR(-EINVAL);
+	if (IS_ERR(vaddr))
 		return vaddr;
 	buffer->vaddr = vaddr;
 	buffer->kmap_cnt++;
@@ -629,7 +633,7 @@ static void *ion_handle_kmap_get(struct ion_handle *handle)
 		return buffer->vaddr;
 	}
 	vaddr = ion_buffer_kmap_get(buffer);
-	if (IS_ERR_OR_NULL(vaddr))
+	if (IS_ERR(vaddr))
 		return vaddr;
 	handle->kmap_cnt++;
 	return vaddr;
@@ -713,7 +717,7 @@ static int ion_debug_client_show(struct seq_file *s, void *unused)
 			break;
 	}
 
-	if (IS_ERR_OR_NULL(n)) {
+	if (IS_ERR(n)) {
 		pr_err("%s: invalid client %p\n", __func__, client);
 		up_read(&g_idev->lock);
 		return -EINVAL;
@@ -1063,8 +1067,6 @@ static int ion_dma_buf_begin_cpu_access(struct dma_buf *dmabuf, size_t start,
 	mutex_unlock(&buffer->lock);
 	if (IS_ERR(vaddr))
 		return PTR_ERR(vaddr);
-	if (!vaddr)
-		return -ENOMEM;
 	return 0;
 }
 
@@ -1143,7 +1145,7 @@ struct ion_handle *ion_import_dma_buf(struct ion_client *client, int fd)
 	struct ion_handle *handle;
 
 	dmabuf = dma_buf_get(fd);
-	if (IS_ERR_OR_NULL(dmabuf))
+	if (IS_ERR(dmabuf))
 		return ERR_PTR(PTR_ERR(dmabuf));
 	/* if this memory came from ion */
 
@@ -1158,12 +1160,12 @@ struct ion_handle *ion_import_dma_buf(struct ion_client *client, int fd)
 	mutex_lock(&client->lock);
 	/* if a handle exists for this buffer just take a reference to it */
 	handle = ion_handle_lookup(client, buffer);
-	if (!IS_ERR_OR_NULL(handle)) {
+	if (!IS_ERR(handle)) {
 		ion_handle_get(handle);
 		goto end;
 	}
 	handle = ion_handle_create(client, buffer);
-	if (IS_ERR_OR_NULL(handle))
+	if (IS_ERR(handle))
 		goto end;
 	ion_handle_add(client, handle);
 end:
@@ -1179,7 +1181,7 @@ static int ion_sync_for_device(struct ion_client *client, int fd)
 	struct ion_buffer *buffer;
 
 	dmabuf = dma_buf_get(fd);
-	if (IS_ERR_OR_NULL(dmabuf))
+	if (IS_ERR(dmabuf))
 		return PTR_ERR(dmabuf);
 
 	/* if this memory came from ion */
@@ -1213,7 +1215,7 @@ static int ion_sync_for_cpu(struct ion_client *client, int fd)
 	struct ion_buffer *buffer;
 
 	dmabuf = dma_buf_get(fd);
-	if (IS_ERR_OR_NULL(dmabuf))
+	if (IS_ERR(dmabuf))
 		return PTR_ERR(dmabuf);
 
 	/* if this memory came from ion */
@@ -1368,7 +1370,7 @@ static int ion_open(struct inode *inode, struct file *file)
 
 	pr_debug("%s: %d\n", __func__, __LINE__);
 	client = ion_client_create(dev, "user");
-	if (IS_ERR_OR_NULL(client))
+	if (IS_ERR(client))
 		return PTR_ERR(client);
 	file->private_data = client;
 
@@ -1741,7 +1743,7 @@ struct ion_device *ion_device_create(long (*custom_ioctl)
 	}
 
 	idev->debug_root = debugfs_create_dir("ion", NULL);
-	if (IS_ERR_OR_NULL(idev->debug_root))
+	if (!idev->debug_root)
 		pr_err("ion: failed to create debug files.\n");
 
 	idev->custom_ioctl = custom_ioctl;
