@@ -42,8 +42,6 @@
 #include <linux/powersuspend.h>
 #endif
 
-#include "internal.h"
-
 /*
  * Sleep at most 200ms at a time in balance_dirty_pages().
  */
