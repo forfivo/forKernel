@@ -223,6 +223,54 @@ cat << CTAG
 		description:""
 	}},
 	{ SPane:{
+		title:"Thermal Logger control",
+		description:" Save the log for thermal driver."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SOptionList:{
+		default:`echo $(/res/synapse/actions/cortex cortexbrain_thermal_logger)`,
+                action:"cortex cortexbrain_thermal_logger",
+		values:[Disabled, Enabled,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/cortex_start"
+					],
+				}
+		]
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
+		title:"Touchscreen Logger control",
+		description:" Save the log for touchscreen driver."
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SOptionList:{
+		default:`echo $(/res/synapse/actions/cortex cortexbrain_touchscreen_logger)`,
+                action:"cortex cortexbrain_touchscreen_logger",
+		values:[Disabled, Enabled,],
+		notify:[
+				{
+					on:APPLY,
+					do:[ REFRESH, APPLY ],
+					to:[ 
+							"sh /res/synapse/actions/cortex_start"
+					],
+				}
+		]
+	}},
+	{ SDescription:{
+		description:""
+	}},
+	{ SPane:{
 		title:"Android Logger control",
 		description:" Save the logcat (app/system debug output) to file. AUTO will enable logcat when screen ON and disable when OFF."
 	}},
@@ -232,7 +280,7 @@ cat << CTAG
 	{ SOptionList:{
 		default:`echo $(/res/synapse/actions/cortex cortexbrain_android_logger)`,
                 action:"cortex cortexbrain_android_logger",
-		values:[Disabled, Auto,],
+		values:[Disabled, Enabled, Auto,],
 		notify:[
 				{
 					on:APPLY,

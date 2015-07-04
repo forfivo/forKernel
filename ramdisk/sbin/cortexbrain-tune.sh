@@ -25,6 +25,8 @@ cortexbrain_tcp_ram=`cat /res/synapse/SkyHigh/cortexbrain_tcp_ram`;
 cortexbrain_network=`cat /res/synapse/SkyHigh/cortexbrain_network`;
 cortexbrain_android_logger=`cat /res/synapse/SkyHigh/cortexbrain_android_logger`;
 cortexbrain_kernel_logger=`cat /res/synapse/SkyHigh/cortexbrain_kernel_logger`;
+cortexbrain_thermal_logger=`cat /res/synapse/SkyHigh/cortexbrain_thermal_logger`;
+cortexbrain_touchscreen_logger=`cat /res/synapse/SkyHigh/cortexbrain_touchscreen_logger`;
 
 # ==============================================================
 # GLOBAL VARIABLES || without "local" also a variable in a function is global
@@ -57,6 +59,8 @@ cortexbrain_tcp_ram=`cat /res/synapse/SkyHigh/cortexbrain_tcp_ram`;
 cortexbrain_network=`cat /res/synapse/SkyHigh/cortexbrain_network`;
 cortexbrain_android_logger=`cat /res/synapse/SkyHigh/cortexbrain_android_logger`;
 cortexbrain_kernel_logger=`cat /res/synapse/SkyHigh/cortexbrain_kernel_logger`;
+cortexbrain_thermal_logger=`cat /res/synapse/SkyHigh/cortexbrain_thermal_logger`;
+cortexbrain_touchscreen_logger=`cat /res/synapse/SkyHigh/cortexbrain_touchscreen_logger`;
 log -p i -t $FILE_NAME "*** CONFIG ***: READED";
 }
 
@@ -248,17 +252,43 @@ ANDROID_LOGGER()
 
 	if [ "${state}" == "awake" ]; then
 		if [ "$cortexbrain_android_logger" == "1" ]; then
-			echo "1" > /sys/kernel/logger_mode/logger_mode;
+			echo "1" > /sys/module/logger/log_mode;
 		else
-			echo "0" > /sys/kernel/logger_mode/logger_mode;
+			echo "0" > /sys/module/logger/log_mode;
 		fi;
 	elif [ "${state}" == "sleep" ]; then
 		if [ "$cortexbrain_android_logger" == "1" ] || [ "$cortexbrain_android_logger" == "0" ]; then
-			echo "0" > /sys/kernel/logger_mode/logger_mode;
+			echo "0" > /sys/module/logger/log_mode;
 		fi;
 	fi;
 
 	log -p i -t $FILE_NAME "*** ANDROID_LOGGER ***: ${state}";
+}
+
+THERMAL_LOGGER()
+{
+	local state="$1";
+
+	if [ "$cortexbrain_thermal_logger" == "1" ]; then
+		echo "1" > /sys/module/thermal_sys/log_mode;
+	else
+		echo "0" > /sys/module/thermal_sys/log_mode;
+	fi;
+
+	log -p i -t $FILE_NAME "*** THERMAL_LOGGER ***: ${state}";
+}
+
+TOUCHSCREEN_LOGGER()
+{
+	local state="$1";
+
+	if [ "$cortexbrain_touchscreen_logger" == "1" ]; then
+		echo "1" > /sys/module/synaptics_i2c_rmi/log_mode;
+	else
+		echo "0" > /sys/module/synaptics_i2c_rmi/log_mode;
+	fi;
+
+	log -p i -t $FILE_NAME "*** TOUCHSCREEN_LOGGER ***: ${state}";
 }
 
 KERNEL_LOGGER()

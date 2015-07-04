@@ -142,13 +142,17 @@ cortexbrain_android_logger)
   if [ ! -z $2 ]; then
   if [ $2 == Disabled ]; then
     echo 0 > $P
-  elif [ $2 == Auto ]; then
+  elif [ $2 == Enabled ]; then
     echo 1 > $P
+  elif [ $2 == Auto ]; then
+    echo 5 > $P
   fi; fi
   copy=`cat $P`
   if [ $copy == 0 ]; then
     echo Disabled
   elif [ $copy == 1 ]; then
+    echo Enabled
+  elif [ $copy == 5 ]; then
     echo Auto
   fi
   ;;
@@ -166,6 +170,38 @@ cortexbrain_kernel_logger)
     echo Disabled
   elif [ $copy == 1 ]; then
     echo Auto
+  fi
+  ;;
+
+cortexbrain_thermal_logger)
+  P=/res/synapse/SkyHigh/cortexbrain_thermal_logger
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Enabled
+  fi
+  ;;
+
+cortexbrain_touchscreen_logger)
+  P=/res/synapse/SkyHigh/cortexbrain_touchscreen_logger
+  if [ ! -z $2 ]; then
+  if [ $2 == Disabled ]; then
+    echo 0 > $P
+  elif [ $2 == Enabled ]; then
+    echo 1 > $P
+  fi; fi
+  copy=`cat $P`
+  if [ $copy == 0 ]; then
+    echo Disabled
+  elif [ $copy == 1 ]; then
+    echo Enabled
   fi
   ;;
 

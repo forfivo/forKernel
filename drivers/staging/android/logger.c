@@ -40,12 +40,12 @@
 #endif
 
 /*
- * 0 - Enabled
- * 1 - Auto Suspend
- * 2 - Disabled
+ * 0 - Disabled
+ * 1 - Enabled
+ * 5 - Auto Suspend
  */
-static unsigned int log_mode = 1;
-static unsigned int log_enabled = 1; // Do not change this value
+static unsigned int log_mode = 5;
+static unsigned int log_enabled = 1; // Do not change this value 
 
 module_param(log_mode, uint, S_IWUSR | S_IRUGO);
 
@@ -498,20 +498,20 @@ static ssize_t do_write_log_from_user(struct logger_log *log,
 	return count;
 }
 
-static void log_early_suspend(struct power_suspend *handler)
+static void log_power_suspend(struct power_suspend *handler)
 {
-	if (log_mode == 1)
+	if (log_mode == 5)
 		log_enabled = 0;
 }
 
-static void log_late_resume(struct power_suspend *handler)
+static void log_power_resume(struct power_suspend *handler)
 {
 	log_enabled = 1;
 }
 
 static struct power_suspend log_suspend = {
-	.suspend = log_early_suspend,
-	.resume = log_late_resume,
+	.suspend = log_power_suspend,
+	.resume = log_power_resume,
 };
 
 /*
@@ -527,7 +527,7 @@ static ssize_t logger_aio_write(struct kiocb *iocb, const struct iovec *iov,
 	struct logger_entry header;
 	struct timespec now;
 
-	if (!log_enabled || log_mode == 2)
+	if (!log_enabled || log_mode == 0)
 		return 0;
 
 	log = file_get_log(iocb->ki_filp);

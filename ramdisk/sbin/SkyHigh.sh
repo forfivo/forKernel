@@ -30,9 +30,15 @@ $BB rm -rf /cache/lost+found/* 2> /dev/null;
 $BB rm -rf /data/lost+found/* 2> /dev/null;
 $BB rm -rf /data/tombstones/* 2> /dev/null;
 
+# remove UKM support, it conflicts with our synapse settings
+$BB rm -rf /data/UKM 2> /dev/null;
+$BB rm -rf /system/etc/init.d/N4UKM 2> /dev/null;
+$BB rm -rf /system/etc/init.d/UKM 2> /dev/null;
+$BB rm -rf /system/etc/init.d/UKM_WAKE 2> /dev/null;
+
+# critical Permissions fix
 CRITICAL_PERM_FIX()
 {
-	# critical Permissions fix
 	$BB chown -R system:system /data/anr;
 	$BB chown -R root:root /tmp;
 	$BB chown -R root:root /res;
@@ -60,8 +66,20 @@ $BB chown system /sys/devices/system/cpu/cpu3/online
 $BB chmod 666 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 $BB chmod 666 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
 $BB chmod 666 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+$BB chmod 666 /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
+$BB chmod 666 /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+$BB chmod 666 /sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq
+$BB chmod 666 /sys/devices/system/cpu/cpu2/cpufreq/scaling_min_freq
+$BB chmod 666 /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq
+$BB chmod 666 /sys/devices/system/cpu/cpu3/cpufreq/scaling_min_freq
 $BB chmod 444 /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq
+$BB chmod 444 /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq
+$BB chmod 444 /sys/devices/system/cpu/cpu2/cpufreq/cpuinfo_cur_freq
+$BB chmod 444 /sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_cur_freq
 $BB chmod 444 /sys/devices/system/cpu/cpu0/cpufreq/stats/*
+$BB chmod 444 /sys/devices/system/cpu/cpu1/cpufreq/stats/*
+$BB chmod 444 /sys/devices/system/cpu/cpu2/cpufreq/stats/*
+$BB chmod 444 /sys/devices/system/cpu/cpu3/cpufreq/stats/*
 $BB chmod 666 /sys/devices/system/cpu/cpu1/online
 $BB chmod 666 /sys/devices/system/cpu/cpu2/online
 $BB chmod 666 /sys/devices/system/cpu/cpu3/online
