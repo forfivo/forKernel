@@ -29,20 +29,21 @@ void __list_add(struct list_head *new,
 			      struct list_head *prev,
 			      struct list_head *next)
 {
-        if (list_debug)
-                BUG_ON(next->prev != prev);
-        else
+	if (list_debug)
+		BUG_ON(next->prev != prev);
+	else
 		WARN(next->prev != prev,
-			"list_add corruption. next->prev should be "
-			"prev (%p), but was %p. (next=%p).\n",
-			prev, next->prev, next);
-        if (list_debug)
-                BUG_ON(prev->next != next);
-        else
+		"list_add corruption. next->prev should be "
+		"prev (%p), but was %p. (next=%p).\n",
+		prev, next->prev, next);
+
+	if (list_debug)
+		BUG_ON(prev->next != next);
+	else
 		WARN(prev->next != next,
-			"list_add corruption. prev->next should be "
-			"next (%p), but was %p. (prev=%p).\n",
-			next, prev->next, prev);
+		"list_add corruption. prev->next should be "
+		"next (%p), but was %p. (prev=%p).\n",
+		next, prev->next, prev);
 	next->prev = new;
 	new->next = next;
 	new->prev = prev;
