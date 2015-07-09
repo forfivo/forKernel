@@ -565,7 +565,7 @@ static void sec_debug_set_upload_cause(enum sec_debug_upload_cause_t type)
  * This function call does not necessarily mean that a fatal error
  * had occurred. It may be just a warning.
  */
-static inline int sec_debug_dump_stack(void)
+inline int sec_debug_dump_stack(void)
 {
 	if (!sec_debug_level.en.kernel_fault)
 		return -1;
@@ -578,6 +578,7 @@ static inline int sec_debug_dump_stack(void)
 
 	return 0;
 }
+EXPORT_SYMBOL(sec_debug_dump_stack);
 
 static inline void sec_debug_hw_reset(void)
 {
@@ -587,7 +588,7 @@ static inline void sec_debug_hw_reset(void)
 	flush_cache_all();
 
 	outer_flush_all();
-
+	pr_emerg("(%s) ...\n", __func__);
 	exynos5_restart(0, 0);
 
 	while (1) {
@@ -697,6 +698,9 @@ void sec_debug_check_crash_key(unsigned int code, int value)
 	if (!sec_debug_level.en.kernel_fault)
 		return;
 
+	if (code == KEY_POWER)
+		pr_info("key:pwr(%d)\n", value);
+
 	/* Enter Force Upload
 	 *  Hold volume down key first
 	 *  and then press power key twice
@@ -720,6 +724,23 @@ void sec_debug_check_crash_key(unsigned int code, int value)
 				}
 			}
 		}
+
+#if defined(CONFIG_SEC_DEBUG_TSP_LOG) && defined(CONFIG_TOUCHSCREEN_FTS)
+		/* dump TSP rawdata
+		 *	Hold volume up key first
+		 *	and then press home key twice
+		 *	and volume down key should not be pressed
+		 */
+		if (volup_p && !voldown_p) {
+			if (code == KEY_HOMEPAGE) {
+				pr_info
+				    ("%s: count to dump tsp rawdata : %d\n",
+				     __func__, ++loopcount);
+				if (loopcount == 2)
+					tsp_dump();
+			}
+		}
+#endif
 	} else {
 		if (code == VOLUME_UP)
 			volup_p = false;

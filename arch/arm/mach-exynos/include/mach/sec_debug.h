@@ -145,7 +145,7 @@ struct sec_debug_subsys_data_kernel {
 
 struct sec_debug_subsys {
 	unsigned int magic[4];
-	
+
 	struct sec_debug_subsys_data_kernel kernel;
 
 	unsigned int log_kernel_base;
@@ -166,14 +166,15 @@ extern union sec_debug_level_t sec_debug_level;
 
 extern int sec_debug_init(void);
 
+extern int sec_debug_dump_stack(void);
+
 extern int sec_debug_magic_init(void);
 
 extern void sec_debug_check_crash_key(unsigned int code, int value);
 
 extern void sec_getlog_supply_fbinfo(void *p_fb, u32 res_x, u32 res_y, u32 bpp,
 				     u32 frames);
-extern void sec_getlog_supply_loggerinfo(void *p_main, void *p_radio,
-					 void *p_events, void *p_system);
+extern void sec_getlog_supply_loggerinfo(unsigned char *buffer, const char *name);
 extern void sec_getlog_supply_kloginfo(void *klog_buf);
 
 extern void sec_gaf_supply_rqinfo(unsigned short curr_offset,
@@ -182,12 +183,16 @@ extern void sec_gaf_supply_rqinfo(unsigned short curr_offset,
 extern void register_log_char_hook(void (*f) (char c));
 
 extern void sec_debug_save_context(void);
-
 #else
 
 extern void register_log_char_hook(void (*f) (char c));
 
 static inline int sec_debug_init(void)
+{
+	return 0;
+}
+
+static inline int sec_debug_dump_stack(void)
 {
 	return 0;
 }
@@ -199,31 +204,36 @@ static inline int sec_debug_magic_init(void)
 
 static inline void sec_debug_check_crash_key(unsigned int code, int value)
 {
+	return;
 }
 
 static inline void sec_getlog_supply_fbinfo(void *p_fb, u32 res_x, u32 res_y,
 					    u32 bpp, u32 frames)
 {
+	return;
 }
 
 static inline void sec_getlog_supply_meminfo(u32 size0, u32 addr0, u32 size1,
 					     u32 addr1)
 {
+	return;
 }
 
 static inline void sec_getlog_supply_loggerinfo(void *p_main,
-						void *p_radio, void *p_events,
-						void *p_system)
+						const char *name)
 {
+	return;
 }
 
 static inline void sec_getlog_supply_kloginfo(void *klog_buf)
 {
+	return;
 }
 
 static inline void sec_gaf_supply_rqinfo(unsigned short curr_offset,
 					 unsigned short rq_offset)
 {
+	return;
 }
 
 static inline void sec_debug_save_context(void)

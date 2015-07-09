@@ -79,15 +79,18 @@ static struct {
 	.special_mark_4 = (('p' << 24) | ('l' << 16) | ('o' << 8) | ('g' << 0)),
 };
 
-void sec_getlog_supply_loggerinfo(void *p_main,
-				  void *p_radio, void *p_events, void *p_system)
+void sec_getlog_supply_loggerinfo(unsigned char *buffer, char *name)
 {
-	pr_info("%s: 0x%p 0x%p 0x%p 0x%p\n", __func__, p_main, p_radio,
-		p_events, p_system);
-	plat_log_mark.p_main = p_main;
-	plat_log_mark.p_radio = p_radio;
-	plat_log_mark.p_events = p_events;
-	plat_log_mark.p_system = p_system;
+	pr_info("%s: %s, 0x%p\n", __func__, name, buffer);
+
+	if(!strcmp(name, "log_main"))
+		plat_log_mark.p_main = buffer;
+	else if(!strcmp(name, "log_radio"))
+		plat_log_mark.p_radio = buffer;
+	else if(!strcmp(name, "log_events"))
+		plat_log_mark.p_events = buffer;
+	else if(!strcmp(name, "log_system"))
+		plat_log_mark.p_system = buffer;
 }
 EXPORT_SYMBOL(sec_getlog_supply_loggerinfo);
 
