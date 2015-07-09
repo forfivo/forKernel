@@ -73,8 +73,6 @@ struct idr {
  */
 
 void *idr_find_slowpath(struct idr *idp, int id);
-int idr_pre_get(struct idr *idp, gfp_t gfp_mask);
-int idr_get_new_above(struct idr *idp, void *ptr, int starting_id, int *id);
 void idr_preload(gfp_t gfp_mask);
 int idr_alloc(struct idr *idp, void *ptr, int start, int end, gfp_t gfp_mask);
 int idr_for_each(struct idr *idp,
@@ -119,7 +117,42 @@ static inline void *idr_find(struct idr *idr, int id)
 	return idr_find_slowpath(idr, id);
 }
 
+/*
+ * Don't use the following functions.  These exist only to suppress
+ * deprecated warnings on EXPORT_SYMBOL()s.
+ */
+int __idr_pre_get(struct idr *idp, gfp_t gfp_mask);
+int __idr_get_new_above(struct idr *idp, void *ptr, int starting_id, int *id);
 void __idr_remove_all(struct idr *idp);
+
+/**
+ * idr_pre_get - reserve resources for idr allocation
+ * @idp:	idr handle
+ * @gfp_mask:	memory allocation flags
+ *
+ * Part of old alloc interface.  This is going away.  Use
+ * idr_preload[_end]() and idr_alloc() instead.
+ */
+static inline int __deprecated idr_pre_get(struct idr *idp, gfp_t gfp_mask)
+{
+	return __idr_pre_get(idp, gfp_mask);
+}
+
+/**
+ * idr_get_new_above - allocate new idr entry above or equal to a start id
+ * @idp: idr handle
+ * @ptr: pointer you want associated with the id
+ * @starting_id: id to start search at
+ * @id: pointer to the allocated handle
+ *
+ * Part of old alloc interface.  This is going away.  Use
+ * idr_preload[_end]() and idr_alloc() instead.
+ */
+static inline int __deprecated idr_get_new_above(struct idr *idp, void *ptr,
+						 int starting_id, int *id)
+{
+	return __idr_get_new_above(idp, ptr, starting_id, id);
+}
 
 /**
  * idr_get_new - allocate new idr entry
@@ -127,11 +160,12 @@ void __idr_remove_all(struct idr *idp);
  * @ptr: pointer you want associated with the id
  * @id: pointer to the allocated handle
  *
- * Simple wrapper around idr_get_new_above() w/ @starting_id of zero.
+ * Part of old alloc interface.  This is going away.  Use
+ * idr_preload[_end]() and idr_alloc() instead.
  */
-static inline int idr_get_new(struct idr *idp, void *ptr, int *id)
+static inline int __deprecated idr_get_new(struct idr *idp, void *ptr, int *id)
 {
-	return idr_get_new_above(idp, ptr, 0, id);
+	return __idr_get_new_above(idp, ptr, 0, id);
 }
 
 /**
