@@ -92,6 +92,9 @@ enum {
 	/* bit mask for work_busy() return values */
 	WORK_BUSY_PENDING	= 1 << 0,
 	WORK_BUSY_RUNNING	= 1 << 1,
+
+	/* maximum string length for set_worker_desc() */
+	WORKER_DESC_LEN		= 24,
 };
 
 struct work_struct {
@@ -473,6 +476,8 @@ extern void workqueue_set_max_active(struct workqueue_struct *wq,
 				     int max_active);
 extern bool workqueue_congested(unsigned int cpu, struct workqueue_struct *wq);
 extern unsigned int work_busy(struct work_struct *work);
+extern __printf(1, 2) void set_worker_desc(const char *fmt, ...);
+extern void print_worker_info(const char *log_lvl, struct task_struct *task);
 
 /*
  * Like above, but uses del_timer() instead of del_timer_sync(). This means,

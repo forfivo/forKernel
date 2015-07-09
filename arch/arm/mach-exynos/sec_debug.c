@@ -39,7 +39,7 @@
 #include <linux/seq_file.h>
 #include "common.h"
 
-#if (defined CONFIG_SEC_DEBUG && defined CONFIG_SEC_DEBUG_SUBSYS)
+#if defined(CONFIG_SEC_DEBUG) && defined(CONFIG_SEC_DEBUG_SUBSYS)
 struct sec_debug_subsys *subsys_info=0;
 static char *sec_subsys_log_buf;
 static unsigned sec_subsys_log_size;
@@ -78,6 +78,12 @@ struct sched_log {
 	} timer[CONFIG_NR_CPUS][SCHED_LOG_MAX];
 #endif /* CONFIG_SEC_DEBUG_TIMER_LOG */
 };
+static atomic_t task_log_idx[NR_CPUS];
+static atomic_t irq_log_idx[NR_CPUS];
+static atomic_t work_log_idx[NR_CPUS];
+#ifdef CONFIG_SEC_DEBUG_TIMER_LOG
+static atomic_t timer_log_idx[NR_CPUS];
+#endif /* CONFIG_SEC_DEBUG_TIMER_LOG */
 #endif				/* CONFIG_SEC_DEBUG_SCHED_LOG */
 
 #ifdef CONFIG_SEC_DEBUG_AUXILIARY_LOG
@@ -133,7 +139,11 @@ struct rwsem_debug {
  1024~0x1000: panic dumper log
       0x4000: copy of magic
  */
+#if defined(CONFIG_SPARSEMEM)
+#define SEC_DEBUG_MAGIC_PA (S5P_PA_SDRAM)
+#else
 #define SEC_DEBUG_MAGIC_PA S5P_PA_SDRAM
+#endif
 #define SEC_DEBUG_MAGIC_VA phys_to_virt(SEC_DEBUG_MAGIC_PA)
 
 enum sec_debug_reset_reason_t {
@@ -788,10 +798,10 @@ static struct notifier_block nb_panic_block = {
 };
 
 static void sec_kmsg_dump(struct kmsg_dumper *dumper,
-			  enum kmsg_dump_reason reason, const char *s1,
-			  unsigned long l1, const char *s2, unsigned long l2)
+	enum kmsg_dump_reason reason)
 {
 	char *ptr = (char *)SEC_DEBUG_MAGIC_VA + SZ_1K;
+#if 0
 	int total_chars = SZ_4K - SZ_1K;
 	int total_lines = 50;
 	/* no of chars which fits in total_chars *and* in total_lines */
@@ -819,6 +829,9 @@ static void sec_kmsg_dump(struct kmsg_dumper *dumper,
 		*ptr++ = *s1++;
 	while (l2-- > 0)
 		*ptr++ = *s2++;
+#endif
+	kmsg_dump_get_buffer(dumper, true, ptr, SZ_4K - SZ_1K, NULL);
+
 }
 
 static struct kmsg_dumper sec_dumper = {
@@ -827,6 +840,7 @@ static struct kmsg_dumper sec_dumper = {
 
 int __init sec_debug_init(void)
 {
+	int i=0;
 	if (!sec_debug_level.en.kernel_fault)
 		return -1;
 
@@ -846,6 +860,15 @@ int __init sec_debug_init(void)
 	register_reboot_notifier(&nb_reboot_block);
 
 	atomic_notifier_chain_register(&panic_notifier_list, &nb_panic_block);
+
+	for(i=0; i<NR_CPUS; ++i) {
+		atomic_set(&task_log_idx[i], -1);
+		atomic_set(&irq_log_idx[i], -1);
+		atomic_set(&work_log_idx[i], -1);
+#ifdef CONFIG_SEC_DEBUG_TIMER_LOG
+		atomic_set(&timer_log_idx[i], -1);
+#endif
+	}
 
 	return 0;
 }
@@ -1214,15 +1237,22 @@ device_initcall(sec_debug_reset_reason_init);
 
 int __init sec_debug_magic_init(void)
 {
+#if !defined(CONFIG_SPARSEMEM)
 	if (reserve_bootmem(SEC_DEBUG_MAGIC_PA, SZ_4K, BOOTMEM_EXCLUSIVE)) {
 		pr_err("%s: failed reserving magic code area\n", __func__);
 		return -ENOMEM;
 	}
+#endif
 
 	pr_info("%s: success reserving magic code area\n", __func__);
 	return 0;
 }
-
+#if defined(CONFIG_SPARSEMEM)
+void __init sec_debug_memblock_reserve(void)
+{
+	memblock_reserve(SEC_DEBUG_MAGIC_PA, SZ_4K);
+}
+#endif
 #ifdef CONFIG_SEC_DEBUG_FUPLOAD_DUMP_MORE
 static void dump_one_task_info(struct task_struct *tsk, bool is_main)
 {
@@ -1264,6 +1294,7 @@ static void dump_one_task_info(struct task_struct *tsk, bool is_main)
 	if (tsk->state == TASK_RUNNING
 			|| tsk->state == TASK_UNINTERRUPTIBLE
 			|| tsk->mm == NULL) {
+		print_worker_info(KERN_INFO, tsk);
 		show_stack(tsk, NULL);
 		pr_info("\n");
 	}
@@ -1516,10 +1547,9 @@ static bool sec_debug_check_keys(struct input_debug_drv_data *ddata,
 					goto out;
 			}
 			if (!!value) {
-					ddata->crash_key_cnt++;
-				printk(KERN_DEBUG
-					"%s: count for enter forced upload : %d\n",
-				     __func__, ddata->crash_key_cnt);
+				ddata->crash_key_cnt++;
+				pr_debug("%s: count for enter forced upload : %d\n",
+						__func__, ddata->crash_key_cnt);
 			}
 
 			return (2 == ddata->crash_key_cnt) ? true : false;
@@ -1569,7 +1599,7 @@ static int sec_input_debug_connect(struct input_handler *handler, struct input_d
 	if (error)
 		goto err_unregister_handle;
 
-	printk(KERN_DEBUG "[sec_debug] Connected device: %s (%s at %s)\n",
+	pr_debug("[sec_debug] Connected device: %s (%s at %s)\n",
 	       dev_name(&dev->dev),
 	       dev->name ?: "unknown",
 	       dev->phys ?: "unknown");
@@ -1585,7 +1615,7 @@ static int sec_input_debug_connect(struct input_handler *handler, struct input_d
 
 static void sec_input_debug_disconnect(struct input_handle *handle)
 {
-	printk(KERN_DEBUG "[sec_debug] Disconnected device: %s\n",
+	pr_debug("[sec_debug] Disconnected device: %s\n",
 	       dev_name(&handle->dev->dev));
 
 	input_close_device(handle);

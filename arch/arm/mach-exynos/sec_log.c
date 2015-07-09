@@ -26,6 +26,7 @@
 static unsigned *sec_log_ptr;
 static char *sec_log_buf;
 static unsigned sec_log_size;
+static bool sec_log_full;
 
 #ifdef CONFIG_SEC_LOG_LAST_KMSG
 static char *last_kmsg_buffer;
@@ -57,6 +58,8 @@ static char *sec_tsp_log_buf;
 static unsigned sec_tsp_log_size;
 #endif
 
+extern void register_log_text_hook(void (*f)(char *text, size_t size),
+	char *buf, unsigned *position, size_t bufsize);
 #ifdef CONFIG_SEC_LOG_NONCACHED
 static struct map_desc log_buf_iodesc[] __initdata = {
 	{
@@ -66,11 +69,22 @@ static struct map_desc log_buf_iodesc[] __initdata = {
 };
 #endif
 
-static inline void emit_sec_log_char(char c)
+static inline void emit_sec_log(char *text, size_t size)
 {
 	if (sec_log_buf && sec_log_ptr) {
-		sec_log_buf[*sec_log_ptr & (sec_log_size - 1)] = c;
-		(*sec_log_ptr)++;
+		/* Check overflow */
+		size_t pos = *sec_log_ptr & (sec_log_size - 1);
+		if (likely(size + pos <= sec_log_size))
+			memcpy(&sec_log_buf[pos], text, size);
+		else {
+			size_t first = sec_log_size - pos;
+			size_t second = size - first;
+			memcpy(&sec_log_buf[pos], text, first);
+			memcpy(&sec_log_buf[0], text + first, second);
+			if (unlikely(!sec_log_full))
+				sec_log_full = true;
+		}
+		(*sec_log_ptr) += size;
 	}
 }
 
@@ -104,7 +118,7 @@ static int __init sec_log_setup(char *str)
 	sec_log_buf = phys_to_virt(base);
 #endif
 	sec_log_size = size;
-	pr_info("%s: *sec_log_mag:%x *sec_log_ptr:%x " \
+	pr_err("%s: *sec_log_mag:%x *sec_log_ptr:%x " \
 		"sec_log_buf:%p sec_log_size:%d\n",
 		__func__, *sec_log_mag, *sec_log_ptr, sec_log_buf,
 		sec_log_size);
@@ -116,7 +130,8 @@ static int __init sec_log_setup(char *str)
 	} else
 		sec_log_save_old();
 
-	register_log_char_hook(emit_sec_log_char);
+	register_log_text_hook(emit_sec_log, sec_log_buf, sec_log_ptr,
+		sec_log_size);
 
 	sec_getlog_supply_kloginfo(phys_to_virt(base));
 
@@ -132,7 +147,10 @@ static ssize_t sec_log_read_all(struct file *file, char __user *buf,
 	loff_t pos = *offset;
 	ssize_t count, size;
 
-	size = sec_log_size;
+	if (sec_log_full)
+		size = sec_log_size;
+	else
+		size = *sec_log_ptr & (sec_log_size - 1);
 
 	if (pos >= size)
 		return 0;
