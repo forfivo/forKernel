@@ -516,12 +516,6 @@ struct root_domain {
 
 extern struct root_domain def_root_domain;
 
-#ifdef CONFIG_SCHED_HMP
-static LIST_HEAD(hmp_domains);
-DECLARE_PER_CPU(struct hmp_domain *, hmp_cpu_domain);
-#define hmp_cpu_domain(cpu)	(per_cpu(hmp_cpu_domain, (cpu)))
-#endif /* CONFIG_SCHED_HMP */
-
 #endif /* CONFIG_SMP */
 
 /*
