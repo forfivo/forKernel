@@ -869,7 +869,7 @@ void synchronize_rcu_expedited(void)
 			udelay(trycount * num_online_cpus());
 		} else {
 			put_online_cpus();
-			synchronize_rcu();
+			wait_rcu_gp(call_rcu);
 			return;
 		}
 	}
