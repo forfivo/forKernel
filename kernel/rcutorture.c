@@ -1219,7 +1219,8 @@ rcu_torture_printk(char *page)
 		       n_online_successes,
 		       n_online_attempts,
 		       n_offline_successes,
-		       n_offline_attempts,
+		       n_offline_attempts);
+	cnt += sprintf(&page[cnt], "barrier: %ld/%ld:%ld",
 		       n_barrier_successes,
 		       n_barrier_attempts,
 		       n_rcu_torture_barrier_error);
